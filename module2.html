@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claude.ai — เริ่มต้นใช้งาน — CPF AI Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --navy:#0D2137;--blue:#1A4A7A;--sky:#2979C8;
+  --accent:#E85D04;--acl:#FFF3EC;
+  --green:#1B7A3E;--gcl:#EDFAF2;
+  --red:#C0392B;--rcl:#FEF0EE;
+  --amber:#B45309;--acl2:#FFFBEB;
+  --gray50:#F8FAFC;--gray100:#F1F5F9;
+  --gray200:#E2E8F0;--gray400:#94A3B8;
+  --gray600:#475569;--gray800:#1E293B;
+  --text:#1A2332;--muted:#5A6B7E;
+  --sidebar:220px;--font:'Sarabun',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--text);background:#fff;
+     display:flex;min-height:100vh;font-size:15px;line-height:1.7}
+
+/* ── Sidebar ── */
+.sidebar{width:var(--sidebar);background:var(--navy);
+  position:fixed;top:0;left:0;height:100vh;overflow-y:auto;
+  flex-shrink:0;z-index:100}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo .brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.sidebar-section{padding:10px 0 4px 18px;font-size:10px;color:rgba(255,255,255,.35);
+  text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:8px 18px;
+  font-size:13px;color:rgba(255,255,255,.65);text-decoration:none;
+  border-left:3px solid transparent;transition:all .15s}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sidebar a.active{color:#fff;background:rgba(41,121,200,.25);border-left-color:var(--sky)}
+.sidebar a .mn{font-size:11px;background:rgba(255,255,255,.12);
+  border-radius:4px;padding:1px 6px;font-family:var(--mono)}
+
+/* ── Main Content ── */
+.main{margin-left:var(--sidebar);flex:1;max-width:800px;padding:40px 48px 80px}
+.page-header{border-bottom:2px solid var(--navy);padding-bottom:20px;margin-bottom:36px}
+.module-num{font-size:11px;font-weight:600;color:var(--sky);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:6px}
+.page-title{font-size:30px;font-weight:700;color:var(--navy);line-height:1.2}
+.page-desc{font-size:15px;color:var(--muted);margin-top:8px;line-height:1.6}
+.meta-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+  border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--gray200)}
+
+/* ── Steps ── */
+.section-title{font-size:18px;font-weight:700;color:var(--navy);
+  margin:36px 0 18px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gray200)}
+.step{background:#fff;border:1px solid var(--gray200);border-radius:12px;
+  margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.step:hover{border-color:var(--sky)}
+.step-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--sky);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.step-info{flex:1}
+.step-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.step-sub{font-size:13px;color:var(--muted)}
+.step-body{padding:0 20px 18px 66px}
+
+/* ── Instruction list ── */
+.inst-list{background:var(--gray50);border-radius:8px;padding:14px 16px;
+  list-style:none;margin-bottom:14px}
+.inst-list li{display:flex;gap:10px;padding:5px 0;font-size:13px;
+  border-bottom:1px solid var(--gray200)}
+.inst-list li:last-child{border-bottom:none;padding-bottom:0}
+.inst-list li .n{min-width:20px;height:20px;border-radius:50%;
+  background:var(--navy);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* ── Prompt / Code boxes ── */
+.prompt-box{border:1px solid #C7D9F5;border-radius:10px;background:#F0F6FF;
+  margin-bottom:14px;overflow:hidden}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:#E3EEFF;border-bottom:1px solid #C7D9F5}
+.prompt-label{font-size:10px;font-weight:700;color:var(--sky);
+  text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;
+  border:1px solid #A0BBE8;background:#fff;color:var(--sky);font-weight:500;
+  font-family:var(--font)}
+.copy-btn:hover{background:var(--sky);color:#fff}
+.prompt-body{padding:14px 16px;font-size:13px;line-height:1.8;
+  white-space:pre-wrap;font-family:var(--mono);color:var(--gray800)}
+
+.screen-box{background:#0D1117;border-radius:10px;margin-bottom:14px;overflow:hidden}
+.screen-head{background:#21262D;padding:8px 14px;display:flex;
+  align-items:center;gap:6px}
+.dot-r{width:10px;height:10px;border-radius:50%;background:#FF5F57}
+.dot-y{width:10px;height:10px;border-radius:50%;background:#FFBD2E}
+.dot-g{width:10px;height:10px;border-radius:50%;background:#28CA41}
+.screen-lbl{font-size:11px;color:#8B949E;margin-left:6px;font-family:var(--mono)}
+.screen-body{padding:16px 18px;font-size:12px;color:#C9D1D9;
+  font-family:var(--mono);line-height:1.8;white-space:pre}
+
+/* ── Callout boxes ── */
+.tip{background:var(--acl2);border-left:4px solid var(--accent);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--amber);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.tip svg,.note svg,.warn svg{flex-shrink:0;margin-top:1px}
+.note{background:var(--gcl);border-left:4px solid var(--green);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--green);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.warn{background:var(--rcl);border-left:4px solid var(--red);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--red);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.info-box{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px}
+.info-box h4{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px}
+
+/* ── Chat demo ── */
+.chat-demo{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px;margin-bottom:14px}
+.chat-u{background:var(--sky);color:#fff;border-radius:12px 12px 3px 12px;
+  padding:8px 12px;font-size:13px;max-width:70%;margin-left:auto;
+  margin-bottom:8px;line-height:1.6}
+.chat-ai{background:#fff;border:1px solid var(--gray200);
+  border-radius:12px 12px 12px 3px;padding:8px 12px;font-size:13px;
+  max-width:82%;margin-bottom:8px;line-height:1.6}
+.chat-name{font-size:10px;color:var(--gray400);margin-bottom:3px}
+
+/* ── Output ── */
+.output-box{border-left:3px solid var(--green);border-radius:0 8px 8px 0;
+  background:var(--gcl);padding:14px 16px;margin-bottom:14px}
+.output-label{font-size:10px;font-weight:700;color:var(--green);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.output-body{font-size:13px;line-height:1.8;white-space:pre-wrap;
+  color:var(--gray800);font-family:var(--mono)}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{width:100%;height:auto;position:relative}
+  .main{margin-left:0;padding:24px 20px 60px}
+  body{flex-direction:column}
+}
+
+/* ── Nav footer ── */
+.nav-footer{display:flex;justify-content:space-between;
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--gray200)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+  border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;
+  border:1px solid var(--gray200);color:var(--navy);transition:all .15s}
+.nav-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav-btn.primary{background:var(--sky);color:#fff;border-color:var(--sky)}
+.nav-btn.primary:hover{background:var(--navy)}
+
+/* ── Copy JS ── */
+</style>
+</head>
+<body>
+<nav class="sidebar"><div class="sidebar-logo"><div class="brand">🐔 CPF AI Workshop</div><div class="sub">คู่มือประกอบการสอน 2569</div></div><div class="sidebar-section">Modules</div><a href="index.html"><span class="mn">🏠</span>ภาพรวม Workshop</a><a href="module1.html"><span class="mn">01</span>AI Agent คืออะไร + MCP</a><a href="module2.html"><span class="mn">02</span>Claude.ai — เริ่มต้น</a><a href="module3.html"><span class="mn">03</span>Workshop Labs</a><a href="module4.html"><span class="mn">04</span>Dify — Chatbot Builder</a><a href="module4b.html"><span class="mn">04B</span>n8n Cloud + LLM</a><a href="module5.html"><span class="mn">05</span>n8n — Local Install</a><a href="module-multiagent.html"><span class="mn">05B</span>Multi-Agent Workflows</a><a href="module-stitch.html"><span class="mn">05C</span>Stitch + Antigravity 🆕</a><a href="module-claudecode.html"><span class="mn">05D</span>Claude Code</a><a href="module-claudecode-project.html"><span class="mn">05E</span>Full Stack Project 🆕</a><a href="module6.html"><span class="mn">06</span>MCP Protocol</a><a href="module7.html"><span class="mn">07</span>Capstone Project</a></nav>
+<main class="main">
+  <header class="page-header">
+    <div class="module-num">Module 02 · 45 นาที</div>
+    <h1 class="page-title">Claude.ai — เริ่มต้นใช้งาน</h1>
+    <p class="page-desc">สร้างบัญชี, สร้าง Project, อัปโหลดเอกสาร CPF และฝึกเขียน Prompt ที่มีประสิทธิภาพ</p>
+    <div class="meta-pills"><span class="pill" style="background:#E85D04;border-color:#E85D0420;color:#E85D04cc">Hands-on</span><span class="pill" style="background:#1B7A3E;border-color:#1B7A3E20;color:#1B7A3Ecc">ฟรี</span><span class="pill" style="background:#5A6B7E;border-color:#5A6B7E20;color:#5A6B7Ecc">45 นาที</span></div>
+  </header>
+  <h2 class="section-title">สมัครและเข้าใช้ Claude.ai</h2><div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#2979C8">1</div>
+    <div class="step-info">
+      <div class="step-title">สมัครบัญชี Claude.ai</div>
+      <div class="step-sub">ฟรี · ไม่ต้องใส่บัตรเครดิต</div>
+    </div>
+  </div>
+  <div class="step-body"><ul class="inst-list"><li><span class="n">1</span><span>เปิด <strong>claude.ai</strong> ในเบราว์เซอร์</span></li><li><span class="n">2</span><span>กด <strong>Sign up</strong> → Continue with Google</span></li><li><span class="n">3</span><span>เลือก Google account → Allow</span></li><li><span class="n">4</span><span>✅ เข้าสู่ Claude Dashboard</span></li></ul><div class="tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>ใช้ Google Account ของบริษัท (@cpf.co.th) จะดีกว่า ข้อมูลแยกจากบัญชีส่วนตัว</span></div></div>
+</div><div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#2979C8">2</div>
+    <div class="step-info">
+      <div class="step-title">สร้าง Project สำหรับ CPF</div>
+      <div class="step-sub">จำเอกสารได้ตลอด — ไม่ต้องอัปโหลดซ้ำ</div>
+    </div>
+  </div>
+  <div class="step-body"><ul class="inst-list"><li><span class="n">1</span><span>กด <strong>Projects</strong> ในเมนูซ้าย</span></li><li><span class="n">2</span><span>กด <strong>+ New Project</strong></span></li><li><span class="n">3</span><span>ตั้งชื่อ: <code>CPF QC Assistant</code></span></li><li><span class="n">4</span><span>กด Create</span></li></ul><div class="screen-box">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">claude.ai > Projects</span>
+  </div>
+  <div class="screen-body">📁 Projects
+  ┌────────────────────────────────┐
+  │  📂 CPF QC Assistant     ← ใหม่
+  │  📂 CPF HR Assistant
+  │  📂 CPF Feed Products
+  └────────────────────────────────┘
+  [+ New Project]</div>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#2979C8">3</div>
+    <div class="step-info">
+      <div class="step-title">อัปโหลดเอกสารเข้า Project</div>
+      <div class="step-sub">Claude จะ 'อ่านและจำ' เอกสารทั้งหมด</div>
+    </div>
+  </div>
+  <div class="step-body"><ul class="inst-list"><li><span class="n">1</span><span>ใน Project กด <strong>Add content</strong></span></li><li><span class="n">2</span><span>เลือก <strong>Upload files</strong></span></li><li><span class="n">3</span><span>เลือกไฟล์ที่ต้องการ (PDF, Excel, Word, Markdown)</span></li><li><span class="n">4</span><span>รอ Claude ประมวลผล (1-2 นาที)</span></li><li><span class="n">5</span><span>✅ เห็นชื่อไฟล์ในรายการ = พร้อมใช้งาน</span></li></ul><div class="note"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span>อัปโหลดได้สูงสุด 32 MB ต่อไฟล์ รองรับ PDF, Excel, Word, CSV, TXT, Markdown</span></div></div>
+</div><h2 class="section-title">เทคนิคการเขียน Prompt</h2><div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#2979C8">4</div>
+    <div class="step-info">
+      <div class="step-title">โครงสร้าง Prompt ที่ดี</div>
+      <div class="step-sub">5 ส่วนที่ทำให้ได้ผลลัพธ์ที่ต้องการ</div>
+    </div>
+  </div>
+  <div class="step-body"><div class="prompt-box">
+  <div class="prompt-head">
+    <span class="prompt-label">📋 โครงสร้าง Prompt สำหรับงาน CPF</span>
+    <button class="copy-btn" onclick="copyPrompt('p2_1',this)">⎘ คัดลอก</button>
+  </div>
+  <pre class="prompt-body" id="p2_1">[บทบาท] คุณเป็น QC Expert ของ CPF
+
+[ข้อมูล/เอกสาร] จากรายงาน QC ที่อัปโหลดไว้
+
+[คำสั่ง] วิเคราะห์และสรุปผล
+
+[รูปแบบ] แสดงเป็น bullet points แยก:
+  🔴 ไม่ผ่าน | 🟡 ต้องระวัง | 🟢 ผ่าน
+
+[ข้อจำกัด] ใช้ภาษาไทย ไม่เกิน 10 บรรทัด</pre>
+</div></div>
+</div><div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#2979C8">5</div>
+    <div class="step-info">
+      <div class="step-title">เปรียบเทียบ Prompt ดี vs ไม่ดี</div>
+      <div class="step-sub">ความแตกต่างเล็กน้อยให้ผลต่างกันมาก</div>
+    </div>
+  </div>
+  <div class="step-body"><table style="width:100%;font-size:13px;border-collapse:collapse">
+  <tr style="background:#F1F5F9">
+    <th style="padding:8px 12px;text-align:left;border:1px solid #E2E8F0">❌ Prompt ไม่ดี</th>
+    <th style="padding:8px 12px;text-align:left;border:1px solid #E2E8F0">✅ Prompt ที่ดีกว่า</th>
+  </tr>
+  <tr><td style="padding:8px 12px;border:1px solid #E2E8F0">สรุปให้หน่อย</td>
+      <td style="padding:8px 12px;border:1px solid #E2E8F0">สรุปเป็น 3 bullet points เน้นปัญหา QC</td></tr>
+  <tr style="background:#F8FAFC"><td style="padding:8px 12px;border:1px solid #E2E8F0">วิเคราะห์ข้อมูล</td>
+      <td style="padding:8px 12px;border:1px solid #E2E8F0">วิเคราะห์และระบุ LOT ที่ไม่ผ่าน พร้อม action</td></tr>
+  <tr><td style="padding:8px 12px;border:1px solid #E2E8F0">แปลเป็นไทย</td>
+      <td style="padding:8px 12px;border:1px solid #E2E8F0">แปลเป็นไทย รักษาคำศัพท์เทคนิคและตัวเลข</td></tr>
+  <tr style="background:#F8FAFC"><td style="padding:8px 12px;border:1px solid #E2E8F0">เขียนอีเมล</td>
+      <td style="padding:8px 12px;border:1px solid #E2E8F0">เขียนอีเมลทางการ ขอโทษ แจ้งวิธีแก้ ใต้ 100 คำ</td></tr>
+  </table></div>
+</div><h2 class="section-title">Prompts สำเร็จรูปสำหรับ CPF</h2><div class="prompt-box">
+  <div class="prompt-head">
+    <span class="prompt-label">📋 Prompt: สรุปเอกสารยาว</span>
+    <button class="copy-btn" onclick="copyPrompt('p2_2',this)">⎘ คัดลอก</button>
+  </div>
+  <pre class="prompt-body" id="p2_2">อ่านเอกสารที่แนบและสรุปดังนี้:
+
+1. ประเด็นหลัก 3 ข้อ
+2. ตัวเลขสำคัญ (ถ้ามี)
+3. สิ่งที่ต้องดำเนินการ
+4. คำถามที่ยังไม่ชัดเจน
+
+ตอบเป็นภาษาไทย กระชับ ไม่เกิน 15 บรรทัด</pre>
+</div><div class="prompt-box">
+  <div class="prompt-head">
+    <span class="prompt-label">📋 Prompt: ร่างอีเมลมืออาชีพ</span>
+    <button class="copy-btn" onclick="copyPrompt('p2_3',this)">⎘ คัดลอก</button>
+  </div>
+  <pre class="prompt-body" id="p2_3">ร่างอีเมลทางการสำหรับ [สถานการณ์]
+
+รายละเอียด:
+- ผู้รับ: [ตำแหน่ง]
+- เรื่อง: [ระบุ]
+- ข้อมูลสำคัญ: [ระบุ]
+- Tone: [ทางการ/กึ่งทางการ]
+
+ความยาวไม่เกิน 150 คำ ลงนาม [ชื่อ] ฝ่าย [แผนก]</pre>
+</div>
+  <div class="nav-footer"><a href="module1.html" class="nav-btn">← Module 01</a><a href="module3.html" class="nav-btn primary">Module 03 →</a></div>
+</main>
+
+<script>
+function copyPrompt(id,btn){
+  var t=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(function(){
+    var o=btn.textContent;
+    btn.textContent='✓ คัดลอกแล้ว';
+    btn.style.background='#1B7A3E';btn.style.color='#fff';
+    setTimeout(function(){btn.textContent=o;btn.style.background='';btn.style.color='';},2000);
+  }).catch(function(){btn.textContent='(เลือกข้อความด้วยมือ)';});
+}
+// Sidebar active
+var path=window.location.pathname.split('/').pop();
+document.querySelectorAll('.sidebar a').forEach(function(a){
+  if(a.getAttribute('href')===path){a.classList.add('active');}
+});
+</script>
+
+</body>
+</html>

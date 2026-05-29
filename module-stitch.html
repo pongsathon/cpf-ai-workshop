@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Full-Stack App ด้วย Stitch + Antigravity — CPF AI Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --navy:#0D2137;--blue:#1A4A7A;--sky:#2979C8;
+  --accent:#E85D04;--acl:#FFF3EC;
+  --green:#1B7A3E;--gcl:#EDFAF2;
+  --red:#C0392B;--rcl:#FEF0EE;
+  --amber:#B45309;--acl2:#FFFBEB;
+  --orange:#D35400;--ocl:#FEF3EC;
+  --purple:#6D28D9;--pcl:#F5F3FF;
+  --teal:#0F766E;--tcl:#F0FDFA;
+  --gray50:#F8FAFC;--gray100:#F1F5F9;--gray200:#E2E8F0;
+  --gray400:#94A3B8;--gray600:#475569;--gray800:#1E293B;
+  --text:#1A2332;--muted:#5A6B7E;--sidebar:220px;
+  --font:'Sarabun',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--text);background:#fff;
+     display:flex;min-height:100vh;font-size:15px;line-height:1.7}
+.sidebar{width:var(--sidebar);background:var(--navy);position:fixed;
+  top:0;left:0;height:100vh;overflow-y:auto;flex-shrink:0;z-index:100}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo .brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.sidebar-section{padding:10px 0 4px 18px;font-size:10px;color:rgba(255,255,255,.35);
+  text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:8px 18px;
+  font-size:13px;color:rgba(255,255,255,.65);text-decoration:none;
+  border-left:3px solid transparent;transition:all .15s}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sidebar a.active{color:#fff;background:rgba(41,121,200,.25);border-left-color:var(--sky)}
+.sidebar a .mn{font-size:10px;background:rgba(255,255,255,.12);
+  border-radius:4px;padding:1px 6px;font-family:var(--mono)}
+.main{margin-left:var(--sidebar);flex:1;max-width:820px;padding:40px 48px 80px}
+.page-header{border-bottom:2px solid var(--navy);padding-bottom:20px;margin-bottom:36px}
+.module-num{font-size:11px;font-weight:600;color:var(--sky);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:6px}
+.page-title{font-size:30px;font-weight:700;color:var(--navy);line-height:1.2}
+.page-desc{font-size:15px;color:var(--muted);margin-top:8px;line-height:1.6}
+.meta-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+  border-radius:20px;font-size:12px;font-weight:500;border:1px solid}
+.section-title{font-size:18px;font-weight:700;color:var(--navy);
+  margin:36px 0 18px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gray200)}
+.step{background:#fff;border:1px solid var(--gray200);border-radius:12px;
+  margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.step:hover{border-color:var(--sky)}
+.step-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--sky);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.step-info{flex:1}
+.step-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.step-sub{font-size:13px;color:var(--muted)}
+.step-body{padding:0 20px 18px 66px}
+.inst-list{background:var(--gray50);border-radius:8px;padding:14px 16px;
+  list-style:none;margin-bottom:14px}
+.inst-list li{display:flex;gap:10px;padding:5px 0;font-size:13px;
+  border-bottom:1px solid var(--gray200)}
+.inst-list li:last-child{border-bottom:none;padding-bottom:0}
+.inst-list li .n{min-width:20px;height:20px;border-radius:50%;
+  background:var(--navy);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.prompt-box{border:1px solid #C7D9F5;border-radius:10px;background:#F0F6FF;
+  margin-bottom:14px;overflow:hidden}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:#E3EEFF;border-bottom:1px solid #C7D9F5}
+.prompt-label{font-size:10px;font-weight:700;color:var(--sky);
+  text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;
+  border:1px solid #A0BBE8;background:#fff;color:var(--sky);font-weight:500;
+  font-family:var(--font)}
+.copy-btn:hover{background:var(--sky);color:#fff}
+.prompt-body{padding:14px 16px;font-size:12px;line-height:1.8;
+  white-space:pre-wrap;font-family:var(--mono);color:var(--gray800)}
+.screen-box{background:#0D1117;border-radius:10px;margin-bottom:14px;overflow:hidden}
+.screen-head{background:#21262D;padding:8px 14px;display:flex;align-items:center;gap:6px}
+.dot-r{width:10px;height:10px;border-radius:50%;background:#FF5F57}
+.dot-y{width:10px;height:10px;border-radius:50%;background:#FFBD2E}
+.dot-g{width:10px;height:10px;border-radius:50%;background:#28CA41}
+.screen-lbl{font-size:11px;color:#8B949E;margin-left:6px;font-family:var(--mono)}
+.screen-body{padding:16px 18px;font-size:12px;color:#C9D1D9;
+  font-family:var(--mono);line-height:1.8;white-space:pre}
+.tip{background:var(--acl2);border-left:4px solid var(--accent);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--amber);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.note{background:var(--gcl);border-left:4px solid var(--green);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--green);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.warn{background:var(--rcl);border-left:4px solid var(--red);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--red);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.info-box{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px}
+.info-box h4{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px}
+.output-box{border-left:3px solid var(--green);border-radius:0 8px 8px 0;
+  background:var(--gcl);padding:14px 16px;margin-bottom:14px}
+.output-label{font-size:10px;font-weight:700;color:var(--green);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.output-body{font-size:12px;line-height:1.8;white-space:pre-wrap;
+  color:var(--gray800);font-family:var(--mono)}
+.chat-demo{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px;margin-bottom:14px}
+.chat-u{background:var(--sky);color:#fff;border-radius:12px 12px 3px 12px;
+  padding:8px 12px;font-size:13px;max-width:70%;margin-left:auto;
+  margin-bottom:8px;line-height:1.6}
+.chat-ai{background:#fff;border:1px solid var(--gray200);
+  border-radius:12px 12px 12px 3px;padding:8px 12px;font-size:13px;
+  max-width:85%;margin-bottom:8px;line-height:1.6}
+.chat-name{font-size:10px;color:var(--gray400);margin-bottom:3px}
+.badge{display:inline-block;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600}
+.wf-box{border:1px solid var(--gray200);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.wf-title{background:var(--navy);color:#fff;padding:10px 16px;
+  font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.wf-body{padding:14px 16px}
+.wf-row{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-bottom:6px}
+.wf-node{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:8px;padding:6px 12px;font-size:12px;text-align:center;min-width:120px}
+.wf-arrow{color:var(--gray400);font-size:18px;padding:0 6px;flex-shrink:0}
+.wf-node.trigger{background:#E3EEFF;border-color:#A0BBE8;color:var(--blue)}
+.wf-node.ai{background:#F5F3FF;border-color:#C4B5FD;color:var(--purple)}
+.wf-node.action{background:#EDFAF2;border-color:#86EFAC;color:var(--green)}
+.wf-node.cond{background:#FFFBEB;border-color:#FCD34D;color:var(--amber)}
+.wf-node.data{background:#F0FDFA;border-color:#5EEAD4;color:var(--teal)}
+.wf-node.notify{background:#FFF3EC;border-color:#FCA85E;color:var(--orange)}
+@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative}
+  .main{margin-left:0;padding:24px 20px 60px}body{flex-direction:column}}
+.nav-footer{display:flex;justify-content:space-between;
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--gray200)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+  border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;
+  border:1px solid var(--gray200);color:var(--navy);transition:all .15s}
+.nav-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav-btn.primary{background:var(--sky);color:#fff;border-color:var(--sky)}
+.nav-btn.primary:hover{background:var(--navy)}
+.llm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.llm-card{border:1px solid var(--gray200);border-radius:10px;padding:14px;text-align:center}
+.llm-logo{font-size:28px;margin-bottom:6px}
+.llm-name{font-size:13px;font-weight:600;color:var(--navy)}
+.llm-note{font-size:11px;color:var(--muted);margin-top:2px}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--gray200);padding-bottom:-2px}
+.tab-btn{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;
+  border:none;background:none;color:var(--muted);border-bottom:2px solid transparent;
+  margin-bottom:-2px;font-family:var(--font);transition:all .15s}
+.tab-btn.on{color:var(--sky);border-bottom-color:var(--sky)}
+.tab-content{display:none}.tab-content.on{display:block}
+</style>
+</head>
+<body>
+<nav class="sidebar"><div class="sidebar-logo"><div class="brand">🐔 CPF AI Workshop</div><div class="sub">คู่มือประกอบการสอน 2569</div></div><div class="sidebar-section">Modules</div><a href="index.html"><span class="mn">🏠</span>ภาพรวม Workshop</a><a href="module1.html"><span class="mn">01</span>AI Agent คืออะไร + MCP</a><a href="module2.html"><span class="mn">02</span>Claude.ai — เริ่มต้น</a><a href="module3.html"><span class="mn">03</span>Workshop Labs</a><a href="module4.html"><span class="mn">04</span>Dify — Chatbot Builder</a><a href="module4b.html"><span class="mn">04B</span>n8n Cloud + LLM</a><a href="module5.html"><span class="mn">05</span>n8n — Local Install</a><a href="module-multiagent.html"><span class="mn">05B</span>Multi-Agent Workflows</a><a href="module-stitch.html"><span class="mn">05C</span>Stitch + Antigravity 🆕</a><a href="module-claudecode.html"><span class="mn">05D</span>Claude Code</a><a href="module-claudecode-project.html"><span class="mn">05E</span>Full Stack Project 🆕</a><a href="module6.html"><span class="mn">06</span>MCP Protocol</a><a href="module7.html"><span class="mn">07</span>Capstone Project</a></nav>
+<main class="main">
+  <header class="page-header" style="border-bottom-color:#1A73E8">
+    <div class="module-num" style="color:#1A73E8">Bonus Module · 2 ชั่วโมง</div>
+    <h1 class="page-title">Full-Stack App ด้วย Stitch + Antigravity</h1>
+    <p class="page-desc">สร้าง CPF QC Dashboard แบบ Full-Stack ด้วย Google Stitch (UI Design) + Google Antigravity 2.0 (AI Coding Agent) + Cloud Run / Firebase (Deploy)<br><span style="font-size:13px;color:#1A73E8;font-weight:600">🆕 Antigravity 2.0: Standalone App · Dynamic Subagents · CLI · Voice Commands · Firebase</span></p>
+    <div class="meta-pills"><span class="pill" style="background:#1A73E815;border-color:#1A73E840;color:#1A73E8">Google Stitch</span><span class="pill" style="background:#1B7A3E15;border-color:#1B7A3E40;color:#1B7A3E">Antigravity 2.0 🆕</span><span class="pill" style="background:#D3540015;border-color:#D3540040;color:#D35400">Full-Stack</span><span class="pill" style="background:#0891B215;border-color:#0891B240;color:#0891B2">Gemini 3.5 Flash</span><span class="pill" style="background:#41299115;border-color:#41299140;color:#412991">Cloud Run / Firebase</span><span class="pill" style="background:#5A6B7E15;border-color:#5A6B7E40;color:#5A6B7E">2 ชั่วโมง</span></div>
+  </header>
+  <div style="background:#F0F6FF;border:1px solid #C7D9F5;border-radius:12px;padding:16px;margin-bottom:18px"><h4 style="color:#1A4A7A;margin-bottom:8px">🎯 สิ่งที่จะสร้าง</h4><div style="font-size:13px;line-height:1.8;color:#334155">สร้าง <strong>CPF QC Dashboard</strong> — Web App ครบวงจรสำหรับโรงงานอาหารสัตว์ CPF ด้วยแนวทาง <em>Vibe Coding</em> ทั้งหมด
+  <br><br>
+  <strong>App ที่ได้:</strong> React + TypeScript frontend | REST API backend | Real-time QC metrics | Complaint tracker | Stock alerts<br>
+  <strong>เครื่องมือ:</strong> Google Stitch (ออกแบบ UI) → Antigravity (สร้าง code) → Cloud Run (deploy)<br>
+  <strong>เวลา:</strong> ~2 ชั่วโมง | <strong>ค่าใช้จ่าย:</strong> ฟรี (Cloud Run free tier)</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px">
+  <div style="text-align:center;padding:16px;background:#F0F6FF;border-radius:10px;border-top:3px solid #1A73E8">
+    <div style="font-size:24px;margin-bottom:6px">🎨</div>
+    <div style="font-weight:600;color:#1A4A7A">Google Stitch</div>
+    <div style="font-size:12px;color:#5A6B7E;margin-top:3px">AI UI Designer<br>พิมพ์ → ได้ Design<br>ฟรี 350 ครั้ง/เดือน</div>
+  </div>
+  <div style="text-align:center;padding:16px;background:#EDFAF2;border-radius:10px;border-top:3px solid #1B7A3E">
+    <div style="font-size:24px;margin-bottom:6px">⚡</div>
+    <div style="font-weight:600;color:#1B7A3E">Google Antigravity</div>
+    <div style="font-size:12px;color:#5A6B7E;margin-top:3px">AI Coding Agent<br>Design → Working App<br>ฟรี (Gemini powered)</div>
+  </div>
+  <div style="text-align:center;padding:16px;background:#FEF3EC;border-radius:10px;border-top:3px solid #D35400">
+    <div style="font-size:24px;margin-bottom:6px">🚀</div>
+    <div style="font-weight:600;color:#D35400">Google Cloud Run</div>
+    <div style="font-size:12px;color:#5A6B7E;margin-top:3px">1-click Deploy<br>Scale อัตโนมัติ<br>ฟรี 2M requests/เดือน</div>
+  </div>
+</div><h3 style="font-size:15px;font-weight:600;margin-bottom:10px;color:#0D2137">🗺️ ภาพรวม Workflow — 4 Phases</h3><div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:14px"><div style="background:#1A4A7A15;border:1px solid #1A4A7A40;border-radius:8px;padding:7px 12px;font-size:12px;text-align:center">Phase 1
+⚙️ Setup</div><div style="font-size:18px;color:#94A3B8;padding:0 4px">→</div><div style="background:#1A4A7A15;border:1px solid #1A4A7A40;border-radius:8px;padding:7px 12px;font-size:12px;text-align:center">Phase 2
+🎨 Vibe Design
+(Stitch MCP)</div><div style="font-size:18px;color:#94A3B8;padding:0 4px">→</div><div style="background:#1A4A7A15;border:1px solid #1A4A7A40;border-radius:8px;padding:7px 12px;font-size:12px;text-align:center">Phase 3
+💻 Vibe Code
+(Antigravity)</div><div style="font-size:18px;color:#94A3B8;padding:0 4px">→</div><div style="background:#1A4A7A15;border:1px solid #1A4A7A40;border-radius:8px;padding:7px 12px;font-size:12px;text-align:center">Phase 4
+🚀 Vibe Deploy
+(Cloud Run)</div></div><div style="overflow-x:auto;margin-bottom:14px"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#0D2137;color:#fff"><th style="padding:9px 14px;text-align:left;border:1px solid #334155">Phase</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">เครื่องมือ</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">เวลา</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">ผลลัพธ์</th></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0">1 — Setup</td><td style="padding:9px 14px;border:1px solid #E2E8F0">Antigravity + Stitch MCP</td><td style="padding:9px 14px;border:1px solid #E2E8F0">15 นาที</td><td style="padding:9px 14px;border:1px solid #E2E8F0">IDE พร้อม + Stitch เชื่อมแล้ว</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">2 — Vibe Design</td><td style="padding:9px 14px;border:1px solid #E2E8F0">Stitch MCP (ผ่าน Antigravity)</td><td style="padding:9px 14px;border:1px solid #E2E8F0">30 นาที</td><td style="padding:9px 14px;border:1px solid #E2E8F0">UI Screens + DESIGN.md (ไม่ต้อง export)</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0">3 — Vibe Code</td><td style="padding:9px 14px;border:1px solid #E2E8F0">Google Antigravity</td><td style="padding:9px 14px;border:1px solid #E2E8F0">60 นาที</td><td style="padding:9px 14px;border:1px solid #E2E8F0">Full-stack React App</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">4 — Vibe Deploy</td><td style="padding:9px 14px;border:1px solid #E2E8F0">Google Cloud Run</td><td style="padding:9px 14px;border:1px solid #E2E8F0">15 นาที</td><td style="padding:9px 14px;border:1px solid #E2E8F0">App บน Production URL</td></tr></table></div><h2 class="section-title">📦 ตัวอย่างผลงานจริง — CPF QC Operations Center</h2>
+
+<div style="background:linear-gradient(135deg,#0D2137 0%,#1A4A7A 100%);border-radius:14px;padding:22px 24px;margin-bottom:22px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+  <div style="font-size:46px;flex-shrink:0">📦</div>
+  <div style="flex:1;min-width:200px">
+    <div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">ผลงาน Stitch จริง · พร้อมใช้งาน</div>
+    <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:4px">CPF QC Operations Center</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.7)">4 หน้า UI + DESIGN.md — export จาก Google Stitch</div>
+  </div>
+  <a href="stitch_cpf_qc_operations_center.zip" download style="display:inline-flex;align-items:center;gap:8px;background:#2979C8;color:#fff;padding:12px 22px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;flex-shrink:0;border:2px solid rgba(255,255,255,.2);transition:background .15s" onmouseover="this.style.background='#1A4A7A'" onmouseout="this.style.background='#2979C8'">
+    📥 ดาวน์โหลด .zip <span style="font-size:11px;opacity:.8;font-weight:400;margin-left:4px">1.2 MB</span>
+  </a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+  <div style="border:1px solid var(--gray200);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+    <div style="position:relative;overflow:hidden;background:#0D2137">
+      <img src="stitch_screen_dashboard.png" alt="CPF QC Dashboard" style="width:100%;display:block">
+      <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.72);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;font-family:monospace">cpf_qc_operations_dashboard</div>
+    </div>
+    <div style="padding:12px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div style="font-size:13px;font-weight:700;color:var(--navy)">🖥️ QC Operations Dashboard</div>
+        <a href="stitch-exports/dashboard.html" target="_blank" style="font-size:11px;background:#2979C8;color:#fff;padding:3px 9px;border-radius:5px;text-decoration:none;font-weight:600;flex-shrink:0">เปิดดู →</a>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">Stats cards · QC Pass Rate chart · API Latency · Recent Alerts table · Sidebar nav</div>
+    </div>
+  </div>
+  <div style="border:1px solid var(--gray200);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+    <div style="position:relative;overflow:hidden;background:#0D2137">
+      <img src="stitch_screen_dashboard_refined.png" alt="Dashboard Refined" style="width:100%;display:block">
+      <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.72);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;font-family:monospace">cpf_qc_operations_dashboard_refined</div>
+    </div>
+    <div style="padding:12px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div style="font-size:13px;font-weight:700;color:var(--navy)">✨ Dashboard Refined</div>
+        <a href="stitch-exports/dashboard-refined.html" target="_blank" style="font-size:11px;background:#2979C8;color:#fff;padding:3px 9px;border-radius:5px;text-decoration:none;font-weight:600;flex-shrink:0">เปิดดู →</a>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">เวอร์ชันปรับปรุง: density สูงขึ้น · Filter controls · Status color indicators</div>
+    </div>
+  </div>
+  <div style="border:1px solid var(--gray200);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+    <div style="position:relative;overflow:hidden;background:#0D2137">
+      <img src="stitch_screen_lot_detail.png" alt="QC Lot Detail" style="width:100%;display:block">
+      <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.72);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;font-family:monospace">qc_lot_detail_report_cp_240525_004</div>
+    </div>
+    <div style="padding:12px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div style="font-size:13px;font-weight:700;color:var(--navy)">🔬 QC Lot Detail Report</div>
+        <a href="stitch-exports/qc-detail.html" target="_blank" style="font-size:11px;background:#2979C8;color:#fff;padding:3px 9px;border-radius:5px;text-decoration:none;font-weight:600;flex-shrink:0">เปิดดู →</a>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">LOT CP-240525-004 · Chemical Analysis · Metric Performance chart · LOT Journey timeline</div>
+    </div>
+  </div>
+  <div style="border:1px solid var(--gray200);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+    <div style="position:relative;overflow:hidden;background:#0D2137">
+      <img src="stitch_screen_complaint_form.png" alt="Complaint Form" style="width:100%;display:block">
+      <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.72);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;font-family:monospace">new_complaint_intake_form</div>
+    </div>
+    <div style="padding:12px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div style="font-size:13px;font-weight:700;color:var(--navy)">📋 New Complaint Intake Form</div>
+        <a href="stitch-exports/complaint-form.html" target="_blank" style="font-size:11px;background:#2979C8;color:#fff;padding:3px 9px;border-radius:5px;text-decoration:none;font-weight:600;flex-shrink:0">เปิดดู →</a>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">แบบฟอร์มรับเรื่องร้องเรียน · ข้อมูลลูกค้า · ข้อมูลสินค้า · ภาษาไทย/English</div>
+    </div>
+  </div>
+</div>
+
+<div style="background:var(--gray50);border:1px solid var(--gray200);border-radius:10px;padding:16px 20px;margin-bottom:28px">
+  <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px">📂 โครงสร้างไฟล์ใน .zip</div>
+  <div style="font-family:monospace;font-size:12px;line-height:2.1;color:var(--gray800)">your-project/ <span style="color:#8B949E">← สร้างโดย @stitch.* MCP tools ทั้งหมด</span><br>&nbsp;&nbsp;├── <span style="color:#0891B2;font-weight:600">DESIGN.md</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ← สร้างโดย @stitch.get_design_tokens อัตโนมัติ<br>&nbsp;&nbsp;└── <span style="color:#1B7A3E;font-weight:600">public/</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span style="color:#1B7A3E;font-weight:600">dashboard.html</span> &nbsp; &nbsp;← สร้างโดย @stitch.generate_screen<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span style="color:#1B7A3E;font-weight:600">qc-detail.html</span> &nbsp; &nbsp;← สร้างโดย @stitch.generate_screen<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span style="color:#1B7A3E;font-weight:600">complaint-form.html</span>← สร้างโดย @stitch.generate_screen</div>
+  <div style="margin-top:10px;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start">💡 <span><strong>ไม่มีโฟลเดอร์ stitch-exports/</strong> อีกต่อไป — ทุกไฟล์สร้างจาก MCP โดยตรงและบันทึกลง project ให้อัตโนมัติ · ไฟล์ใน .zip ด้านบนคือ <strong>ตัวอย่าง</strong> สำหรับ reference เท่านั้น</span></div>
+</div>
+<div style="background:#1A4A7A;border-radius:12px;padding:16px 20px;margin:32px 0 20px;display:flex;align-items:center;gap:14px">
+  <div style="font-size:32px">⚙️</div>
+  <div>
+    <div style="color:rgba(255,255,255,.7);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase">Phase 1 · 15 นาที</div>
+    <div style="color:#fff;font-size:18px;font-weight:700;margin-top:2px">Setup — ติดตั้งและเชื่อมต่อ</div>
+    <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:2px">Antigravity IDE + Google Stitch MCP</div>
+  </div>
+</div><div class="step"><div class="step-header"><div class="step-num" style="background:#1A4A7A">1A</div><div class="step-info"><div class="step-title">ติดตั้ง Google Antigravity 2.0</div><div class="step-sub">Standalone Desktop App + CLI — ไม่ใช่ VS Code fork อีกต่อไป</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>เปิด <a href='https://antigravity.google' target='_blank'><strong>antigravity.google</strong></a> → กด <strong>Download 2.0</strong></span></li><li><span class="n" style="background:#0D2137">2</span><span>เลือก OS (macOS / Windows / Linux) → ดาวน์โหลด installer<br><span style='font-size:12px;color:#5A6B7E'>⚠️ Antigravity 2.0 เป็น <strong>Standalone Desktop App</strong> แยกจาก IDE 1.0 — icon จะมีพื้นหลังขาว (1.0 มีพื้นดำ)</span></span></li><li><span class="n" style="background:#0D2137">3</span><span>ติดตั้งและเปิด Antigravity 2.0 (หน้าจอใหม่ ไม่เหมือน VS Code)</span></li><li><span class="n" style="background:#0D2137">4</span><span>Login ด้วย Google Account → เลือก Plan: <strong>Pro (ฟรี)</strong> หรือ Ultra ($100/เดือน)</span></li><li><span class="n" style="background:#0D2137">5</span><span>ไปที่ <strong>Settings → Security → Deny List</strong> เพิ่ม: <code>rm -rf</code>, <code>DROP TABLE</code>, <code>git push --force</code></span></li><li><span class="n" style="background:#0D2137">6</span><span><strong>(ทางเลือก) ติดตั้ง CLI</strong> สำหรับรันใน terminal: <code>npm install -g @antigravity/cli</code></span></li></ul><div class="screen-box" style="margin-bottom:14px"><div class="screen-head"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="screen-lbl">Antigravity — First Launch</span></div><div class="screen-body" style="line-height:1.85">Google Antigravity v2.0.0 (Standalone)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🤖 Model: Gemini 3.5 Flash  (also: Claude Sonnet 4.5, GPT-OSS)
+⚡ Subagents: Dynamic parallel execution enabled
+✅ Logged in as: your.name@cpf.co.th
+✅ Gemini 2.5 Pro — Ready
+✅ Agent Mode — Enabled
+✅ MCP Servers — 0 connected (จะเพิ่มถัดไป)
+
+[Open Folder]  [New Project]  [Clone Repo]</div></div><div class="tip">💡 <span>Antigravity 2.0 ใช้ <strong>Gemini 3.5 Flash</strong> เป็น default (รองรับ Claude Sonnet 4.5 และ GPT-OSS ด้วย) — dynamic subagents รันคู่ขนานได้ สามารถสั่งด้วย <strong>เสียง</strong> และตั้ง <strong>scheduled tasks</strong> ได้แล้ว</span></div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#1A4A7A">1B</div><div class="step-info"><div class="step-title">เชื่อม Google Stitch ผ่าน MCP</div><div class="step-sub">ให้ Antigravity เรียก Stitch API ได้โดยตรง</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>ใน Antigravity กด <strong>Settings → MCP Servers → + Add Server</strong></span></li><li><span class="n" style="background:#0D2137">2</span><span>กด <strong>+ Install from MCP Store</strong></span></li><li><span class="n" style="background:#0D2137">3</span><span>ค้นหา <strong>Google Stitch</strong> → Install</span></li><li><span class="n" style="background:#0D2137">4</span><span>รอ Stitch MCP Server เริ่มทำงาน (30 วินาที)</span></li><li><span class="n" style="background:#0D2137">5</span><span>✅ เห็น <strong>Stitch</strong> ใน MCP Servers list = พร้อมแล้ว</span></li></ul><div class="screen-box" style="margin-bottom:14px"><div class="screen-head"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="screen-lbl">หรือเพิ่ม Manual ใน settings.json</span></div><div class="screen-body" style="line-height:1.85">{
+  "mcpServers": {
+    "stitch": {
+      "name": "Google Stitch",
+      "type": "google_stitch",
+      "tools": [
+        "generate_screen",
+        "edit_screen",
+        "export_html_css",
+        "create_variant",
+        "get_design_tokens",
+        "create_design_system",
+        "export_to_figma"
+      ]
+    }
+  }
+}</div></div><div class="note">✅ <span>MCP เชื่อม Stitch กับ Antigravity — Agent สามารถสั่ง Stitch สร้าง UI แล้วรับ HTML/CSS กลับมาใส่ใน project ได้อัตโนมัติ</span></div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#1A4A7A">1C</div><div class="step-info"><div class="step-title">สร้าง Project โฟลเดอร์</div><div class="step-sub"></div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>สร้างโฟลเดอร์: <code>mkdir cpf-qc-dashboard && cd cpf-qc-dashboard</code></span></li><li><span class="n" style="background:#0D2137">2</span><span>เปิดใน Antigravity: <strong>File → Open Folder</strong></span></li><li><span class="n" style="background:#0D2137">3</span><span>สลับไปที่ <strong>Agent Tab</strong> (ไอคอนหุ่นยนต์ด้านซ้าย)</span></li><li><span class="n" style="background:#0D2137">4</span><span>เลือก Mode: <strong>Planning Mode</strong> (Agent จะแสดงแผนก่อน ไม่รีบทำ)</span></li></ul></div></div><div style="background:#F0FFF4;border:1px solid #86EFAC;border-radius:12px;padding:16px 20px;margin-bottom:20px"><div style="font-size:13px;font-weight:700;color:#1B7A3E;margin-bottom:10px">🆕 Antigravity 2.0 — 5 Surfaces</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px"><div style="background:#fff;border:1px solid #BBF7D0;border-radius:8px;padding:10px"><div style="font-weight:700;color:#1B7A3E">🖥️ Desktop App</div><div style="color:#475569;margin-top:2px">Standalone app ใหม่ (icon พื้นขาว) · subagents · voice · scheduled tasks</div></div><div style="background:#fff;border:1px solid #BBF7D0;border-radius:8px;padding:10px"><div style="font-weight:700;color:#1B7A3E">⌨️ CLI</div><div style="color:#475569;margin-top:2px"><code>antigravity agent run "task"</code> · รันใน terminal · CI/CD pipeline</div></div><div style="background:#fff;border:1px solid #BBF7D0;border-radius:8px;padding:10px"><div style="font-weight:700;color:#1B7A3E">🔧 SDK (Python)</div><div style="color:#475569;margin-top:2px"><code>from antigravity import Agent</code> · host custom agents บน infra เอง</div></div><div style="background:#fff;border:1px solid #BBF7D0;border-radius:8px;padding:10px"><div style="font-weight:700;color:#1B7A3E">☁️ Managed Agents API</div><div style="color:#475569;margin-top:2px">เรียก agentic workflow ผ่าน Gemini API · serverless · pay per run</div></div></div><div style="margin-top:8px;font-size:11px;color:#6B7280">Workshop นี้ใช้ <strong>Desktop App</strong> เป็นหลัก · ส่วน CLI ใช้ใน Phase 4 Deploy</div></div><div style="background:#1A73E8;border-radius:12px;padding:16px 20px;margin:32px 0 20px;display:flex;align-items:center;gap:14px">
+  <div style="font-size:32px">🎨</div>
+  <div style="flex:1">
+    <div style="color:rgba(255,255,255,.7);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase">Phase 2 · 30 นาที</div>
+    <div style="color:#fff;font-size:18px;font-weight:700;margin-top:2px">Vibe Design — ออกแบบ UI ผ่าน Stitch MCP</div>
+    <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:2px">ไม่ต้องเปิด browser — สั่งผ่าน @stitch tools ใน Antigravity Agent โดยตรง</div>
+  </div>
+</div>
+
+<div style="background:#E8F0FE;border:2px solid #1A73E8;border-radius:12px;padding:16px 20px;margin-bottom:20px">
+  <div style="font-size:13px;font-weight:700;color:#1A73E8;margin-bottom:10px">⚡ MCP Workflow — ไม่ต้อง Export ไฟล์</div>
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:#334155">
+    <div style="background:#fff;border:1px solid #A8C7FA;border-radius:6px;padding:5px 12px;font-weight:600">Antigravity Agent</div>
+    <div style="color:#1A73E8;font-size:18px">⇄</div>
+    <div style="background:#1A73E8;color:#fff;border-radius:6px;padding:5px 12px;font-weight:600">Stitch MCP</div>
+    <div style="color:#94A3B8;padding:0 4px">→</div>
+    <div style="background:#fff;border:1px solid #A8C7FA;border-radius:6px;padding:5px 12px">สร้าง UI Screen</div>
+    <div style="color:#94A3B8;padding:0 4px">→</div>
+    <div style="background:#fff;border:1px solid #A8C7FA;border-radius:6px;padding:5px 12px">ได้ HTML/CSS กลับมา</div>
+    <div style="color:#94A3B8;padding:0 4px">→</div>
+    <div style="background:#fff;border:1px solid #A8C7FA;border-radius:6px;padding:5px 12px">ใส่ใน project อัตโนมัติ</div>
+  </div>
+  <div style="margin-top:10px;font-size:12px;color:#1A73E8">✅ ไม่ต้องเปิด labs.google/stitch &nbsp;·&nbsp; ✅ ไม่ต้อง export ไฟล์เอง &nbsp;·&nbsp; ✅ Agent จัดการทุกอย่าง</div>
+</div>
+
+<div class="step"><div class="step-header"><div class="step-num" style="background:#1A73E8">2A</div><div class="step-info"><div class="step-title">สร้าง Design System ผ่าน MCP</div><div class="step-sub">สั่ง Agent ดึง design tokens จาก Stitch แล้วสร้าง DESIGN.md ให้อัตโนมัติ</div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 พิมพ์ใน Antigravity Agent Tab</span><button class="copy-btn" onclick="copyPrompt('p2a_mcp',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p2a_mcp">ใช้ @stitch.create_design_system สร้าง Design System สำหรับ CPF QC Dashboard:
+
+Brand: CPF (CP Foods) — industrial, professional, trustworthy
+Primary color: Deep Navy (#0D2137)
+Secondary color: Blue (#2979C8)
+Background: White (#FFFFFF)
+Font: Inter (headings), System UI (body)
+Style: Clean industrial dashboard — high data density, clear hierarchy
+
+จากนั้นใช้ @stitch.get_design_tokens เพื่อดึง tokens ทั้งหมด
+แล้วสร้างไฟล์ DESIGN.md ใน root project โดยรวม tokens + guidelines ไว้ครบ</pre></div><div class="screen-box" style="margin-bottom:12px"><div class="screen-head"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="screen-lbl">Antigravity — MCP Call</span></div><div class="screen-body" style="line-height:1.85"><span style="color:#58A6FF">[Agent]</span> Calling @stitch.create_design_system...
+<span style="color:#3FB950">✅ Design System created</span> — Industrial Precision theme
+
+<span style="color:#58A6FF">[Agent]</span> Calling @stitch.get_design_tokens...
+<span style="color:#3FB950">✅ Tokens received</span> — colors, typography, spacing
+
+<span style="color:#3FB950">✓ Created</span> DESIGN.md (design system + tokens)</div></div><div class="note">✅ <span>DESIGN.md ถูกสร้างโดย Agent อัตโนมัติ — ไม่ต้องพิมพ์เอง</span></div></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num" style="background:#1A73E8">2B</div><div class="step-info"><div class="step-title">สร้างหน้า Dashboard หลัก ผ่าน MCP</div><div class="step-sub">Agent เรียก @stitch.generate_screen → รับ HTML/CSS → บันทึกไฟล์ให้อัตโนมัติ</div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 พิมพ์ใน Antigravity Agent Tab</span><button class="copy-btn" onclick="copyPrompt('p2b_mcp',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p2b_mcp">ใช้ @stitch.generate_screen สร้างหน้า Dashboard หลัก:
+
+Screen name: "QC Operations Dashboard"
+Mode: Flash (เร็วที่สุด)
+
+Layout:
+- Fixed dark sidebar (navy) พร้อม navigation: Dashboard, QC Reports, Complaints, Settings
+- Top header: breadcrumb + user avatar + notification bell
+- 4 stat cards: Total LOTs, Pass Rate %, Failed LOTs, Open Complaints
+- Line chart: QC Pass Rate (7 วัน)
+- Table: Recent LOTs — columns: LOT ID, Plant, Product, Date, Pass/Fail, Action
+
+Style: ยึดตาม DESIGN.md ที่สร้างไว้
+
+หลังได้ result ให้บันทึกเป็น public/dashboard.html</pre></div><div class="screen-box" style="margin-bottom:12px"><div class="screen-head"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="screen-lbl">Antigravity — MCP Generate Screen</span></div><div class="screen-body" style="line-height:1.85"><span style="color:#58A6FF">[Agent]</span> Calling @stitch.generate_screen({
+  name: "QC Operations Dashboard",
+  mode: "flash",
+  design_system: DESIGN.md
+})
+<span style="color:#3FB950">✅ Screen generated</span> — 413 lines HTML/CSS
+
+<span style="color:#3FB950">✓ Saved</span> public/dashboard.html</div></div></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num" style="background:#1A73E8">2C</div><div class="step-info"><div class="step-title">สร้างหน้าเพิ่มเติมอีก 2 หน้า</div><div class="step-sub">QC Lot Detail + Complaint Form — agent maintain design consistency ให้เอง</div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 QC Lot Detail Page</span><button class="copy-btn" onclick="copyPrompt('p2c1_mcp',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p2c1_mcp">ใช้ @stitch.generate_screen สร้างหน้า QC Lot Detail:
+
+Screen name: "QC Lot Detail Report"
+Design: ต้อง consistent กับ dashboard.html ที่สร้างไว้
+
+Content:
+- Header: LOT ID (เช่น CP-240525-004) + Status badge + Back button
+- Summary cards: Plant, Line, Product, Date, Overall Result
+- Chemical Analysis section: ตาราง metric vs threshold (สีแดง/เขียวตาม pass/fail)
+- Bar chart: Metric Performance vs Thresholds
+- LOT Journey timeline: Received → QC Check → Approved/Rejected
+
+บันทึกเป็น public/qc-detail.html</pre></div><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Complaint Intake Form</span><button class="copy-btn" onclick="copyPrompt('p2c2_mcp',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p2c2_mcp">ใช้ @stitch.generate_screen สร้างหน้า Complaint Form:
+
+Screen name: "New Complaint Intake Form"
+Design: consistent กับ design system เดิม
+
+Form sections:
+- ข้อมูลลูกค้า | Customer Info: ชื่อ, โทรศัพท์, อีเมล, ประเภทลูกค้า
+- ข้อมูลสินค้า | Product Info: ชื่อสินค้า, LOT number, วันที่ซื้อ, ช่องทาง
+- รายละเอียดร้องเรียน | Details: ประเภทปัญหา, ความรุนแรง, รายละเอียด, แนบรูป
+
+Label: ทั้งภาษาไทย/English บน label เดียวกัน
+บันทึกเป็น public/complaint-form.html</pre></div><div class="note">✅ <span>Stitch MCP จะ maintain design system โดยอัตโนมัติทุกหน้า — ไม่ต้องบอก colors/fonts ซ้ำ</span></div></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num" style="background:#1A73E8">2D</div><div class="step-info"><div class="step-title">Refine และ Iterate ผ่าน MCP</div><div class="step-sub">แก้ไขหน้าที่มีอยู่โดยไม่ต้อง regenerate ทั้งหมด</div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 แก้ไข Screen ที่มีอยู่</span><button class="copy-btn" onclick="copyPrompt('p2d_mcp',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p2d_mcp">ใช้ @stitch.edit_screen แก้ไข dashboard.html:
+- เพิ่ม Filter dropdown: เลือกโรงงาน (Plant A/B/C)
+- เปลี่ยน line chart เป็น area chart
+- เพิ่ม column "Severity" ในตาราง LOTs (สีแดง/เหลือง/เขียว)
+- เพิ่มปุ่ม "Export PDF" ที่ header
+
+อัปเดตไฟล์ public/dashboard.html</pre></div>
+
+<div style="overflow-x:auto;margin-bottom:12px"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#0D2137;color:#fff"><th style="padding:8px 12px;text-align:left">MCP Tool</th><th style="padding:8px 12px;text-align:left">ใช้เมื่อ</th><th style="padding:8px 12px;text-align:left">ผลลัพธ์</th></tr>
+<tr style="background:#F8FAFC"><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0;font-family:monospace;color:#1A73E8">@stitch.generate_screen</td><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">สร้างหน้าใหม่จาก prompt</td><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">HTML/CSS ไฟล์ใหม่</td></tr>
+<tr style="background:#fff"><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0;font-family:monospace;color:#1A73E8">@stitch.edit_screen</td><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">แก้ไขหน้าที่มีอยู่แล้ว</td><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">อัปเดตไฟล์เดิม</td></tr>
+<tr style="background:#F8FAFC"><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0;font-family:monospace;color:#1A73E8">@stitch.create_variant</td><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">ต้องการ A/B หลายแบบ</td><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">หลายไฟล์ให้เลือก</td></tr>
+<tr style="background:#fff"><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0;font-family:monospace;color:#1A73E8">@stitch.get_design_tokens</td><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">ต้องการ tokens ล่าสุด</td><td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">JSON tokens → DESIGN.md</td></tr>
+<tr style="background:#F8FAFC"><td style="padding:8px 12px;font-family:monospace;color:#1A73E8">@stitch.export_to_figma</td><td style="padding:8px 12px">ส่งให้ UX/Designer ดู</td><td style="padding:8px 12px">Figma file link</td></tr>
+</table></div>
+<div class="tip"><div style="background:#E8F5E9;border-left:4px solid #1B7A3E;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#1B7A3E;margin-bottom:12px;display:flex;gap:10px">⚡ <span><strong>Antigravity 2.0 — Dynamic Subagents</strong> — สำหรับโปรเจกต์ใหญ่ Agent หลักสามารถ spawn subagents ทำงานพร้อมกันได้ เช่น สร้าง dashboard, qc-detail, และ complaint-form ทั้ง 3 หน้าในเวลาเดียวกัน แทนที่จะรอทีละหน้า<br><code style="background:#C8E6C9;padding:1px 5px;border-radius:3px;font-size:11px">สร้างทั้ง 3 หน้าพร้อมกัน ใช้ subagents รันคู่ขนาน ไม่ต้องรอทีละหน้า</code></span></div><div style="background:#E8F5E9;border-left:4px solid #1B7A3E;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#1B7A3E;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start">⚡ <span><strong>Antigravity 2.0 — Dynamic Subagents</strong> — Agent หลักสามารถ spawn subagents ทำงานพร้อมกันได้ เช่น บอกว่า <code style="background:#C8E6C9;padding:1px 5px;border-radius:3px;font-size:11px">"สร้างทั้ง 3 หน้าพร้อมกัน ใช้ subagents คู่ขนาน"</code> — เร็วกว่าทำทีละหน้าในแบบ v1</span></div>💡 <span>ถ้าต้องการดูหน้าตาก่อน implement — ใช้ <code>@stitch.create_variant</code> สร้าง 2-3 แบบ แล้วเลือกแบบที่ชอบ ก่อนสั่ง Agent build จริง</span></div>
+</div></div>
+
+<div style="background:#1B7A3E;border-radius:12px;padding:16px 20px;margin:32px 0 20px;display:flex;align-items:center;gap:14px">
+  <div style="font-size:32px">💻</div>
+  <div>
+    <div style="color:rgba(255,255,255,.7);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase">Phase 3 · 60 นาที</div>
+    <div style="color:#fff;font-size:18px;font-weight:700;margin-top:2px">Vibe Code — สร้าง Full-Stack App ด้วย Antigravity</div>
+    <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:2px">Agent อ่าน Design → เขียน Code → Build → Test → แก้เอง</div>
+  </div>
+</div><div style="background:#EDFAF2;border:1px solid #86EFAC;border-radius:12px;padding:16px;margin-bottom:18px"><h4 style="color:#1B7A3E;margin-bottom:8px">⚡ Antigravity ทำงานอะไรได้บ้าง?</h4><div style="font-size:13px;line-height:1.8;color:#334155"><strong>Agent Mode</strong>: วางแผน → เขียน code → รัน terminal → แก้ error → loop จนเสร็จ — โดยอัตโนมัติ
+  <br><br>
+  <strong>สิ่งที่ทำได้:</strong><br>
+  • Scaffold full React + TypeScript project<br>
+  • Import design จาก Stitch ผ่าน MCP<br>
+  • สร้าง REST API (Node.js / FastAPI / Go)<br>
+  • Setup database schema (SQLite / PostgreSQL)<br>
+  • เขียน unit tests และ integration tests<br>
+  • Deploy ไป Cloud Run ด้วย 1 คำสั่ง</div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#1B7A3E">3A</div><div class="step-info"><div class="step-title">Mission Statement — บอก Antigravity ว่าต้องการอะไร</div><div class="step-sub">พิมพ์ใน Agent Tab ใน Planning Mode</div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Mission Prompt — ส่งให้ Antigravity Agent</span><button class="copy-btn" onclick="copyPrompt('p_ag_mission',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p_ag_mission">อ่าน DESIGN.md ก่อนทำทุกอย่าง (สร้างโดย @stitch.get_design_tokens แล้ว)
+อ่าน public/*.html ที่สร้างโดย Stitch MCP ไว้แล้วเพื่อเข้าใจ design
+
+สร้าง Full-Stack Web Application: CPF QC Dashboard
+สำหรับทีม QC โรงงานอาหารสัตว์ CPF
+
+Tech Stack:
+  Frontend: React 19 + TypeScript + TailwindCSS + Recharts
+  Backend: FastAPI (Python) + SQLAlchemy + SQLite
+  State: React Query (TanStack Query)
+
+Features ที่ต้องมี:
+  1. Dashboard หลัก: 4 stat cards + 2 charts + alert table
+  2. QC Report List: ตารางกรองได้, เรียงได้, search
+  3. QC Detail Page: ข้อมูล LOT + radar chart + actions
+  4. Complaint Form: รับ complaint พร้อม validation
+  5. Stock Monitor: แสดงสต็อก + alert เมื่อต่ำกว่าเกณฑ์
+  6. REST API: CRUD endpoints ทุก feature
+  7. Seed data: ข้อมูล mock สำหรับ demo (ใช้ข้อมูล CPF)
+
+Design: ตาม DESIGN.md อย่างเคร่งครัด
+        Import design tokens จาก DESIGN.md
+
+ห้าม:
+  - hardcode API keys ใดๆ
+  - ใช้ any type ใน TypeScript
+  - ข้าม unit tests
+
+ขั้นตอน: วางแผนก่อน รอ approve แล้วค่อย implement</pre></div><div class="note">✅ <span>Antigravity จะแสดง Implementation Plan ก่อน อ่านและ approve แล้วค่อยให้ทำจริง</span></div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#1B7A3E">3B</div><div class="step-info"><div class="step-title">Review Plan และ Approve</div><div class="step-sub">อ่าน plan ที่ Agent เสนอ</div></div></div><div class="step-body"><div class="screen-box" style="margin-bottom:14px"><div class="screen-head"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="screen-lbl">Antigravity — Implementation Plan (ตัวอย่าง)</span></div><div class="screen-body" style="line-height:1.85">📋 CPF QC Dashboard — Implementation Plan
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reading DESIGN.md... ✅
+Reading DESIGN.md + public/*.html ... ✅ (4 files found)
+
+Proposed Structure:
+  cpf-qc-dashboard/
+  ├── frontend/
+  │   ├── src/
+  │   │   ├── components/    ← shared UI components
+  │   │   ├── pages/         ← Dashboard, QCList, QCDetail, Complaint, Stock
+  │   │   ├── api/           ← API client functions
+  │   │   ├── types/         ← TypeScript interfaces
+  │   │   └── hooks/         ← Custom React hooks
+  │   ├── package.json
+  │   └── tailwind.config.js  ← Design tokens from DESIGN.md
+  ├── backend/
+  │   ├── app/
+  │   │   ├── models.py      ← SQLAlchemy models
+  │   │   ├── schemas.py     ← Pydantic schemas
+  │   │   ├── routers/       ← API endpoints
+  │   │   └── seed_data.py   ← CPF mock data
+  │   └── requirements.txt
+  ├── DESIGN.md
+  └── docker-compose.yml
+
+Estimated time: 8-12 minutes
+Files to create: ~45 files
+
+[✅ Approve &amp; Start]  [✏️ Modify Plan]  [❌ Cancel]</div></div><div class="tip">💡 <span>กด <strong>Approve & Start</strong> เพื่อให้ Agent เริ่ม coding — ดู progress ใน terminal panel ด้านล่าง</span></div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#1B7A3E">3C</div><div class="step-info"><div class="step-title">ดู Agent ทำงาน — Manager View</div><div class="step-sub">สังเกต Agent วางแผนและทำงาน</div></div></div><div class="step-body"><div class="screen-box" style="margin-bottom:14px"><div class="screen-head"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="screen-lbl">Antigravity — Agent Working (Manager View)</span></div><div class="screen-body" style="line-height:1.85">[Agent] Reading DESIGN.md and extracting design tokens...
+[Agent] Found: 10 color variables, typography scale, component patterns
+
+[Agent] Scaffolding React project...
+  ✅ npx create-react-app frontend --template typescript
+  ✅ npm install tailwindcss recharts @tanstack/react-query axios
+
+[Agent] Applying design tokens to tailwind.config.js...
+  ✅ Colors from DESIGN.md → Tailwind theme
+  ✅ Typography scale → fontSize config
+
+[Agent] Importing Stitch designs via MCP...
+  @stitch.get_design_tokens → ✅
+  @stitch.export_html_css("dashboard") → ✅
+  Converting HTML/CSS → React components...
+
+[Agent] Creating components...
+  ✅ StatCard.tsx (dashboard stat cards)
+  ✅ AlertTable.tsx (QC alerts table)
+  ✅ QCRadarChart.tsx (Recharts radar)
+  ✅ StockMeter.tsx (progress bars)
+
+[Agent] Creating pages...
+  ✅ Dashboard.tsx
+  ✅ QCList.tsx
+  ✅ QCDetail.tsx
+  ✅ ComplaintForm.tsx
+  ✅ StockMonitor.tsx
+
+[Agent] Building FastAPI backend...
+  ✅ models.py (QCReport, Complaint, Stock, LOT)
+  ✅ routers/qc.py (GET/POST/PUT/DELETE)
+  ✅ routers/complaints.py
+  ✅ routers/stock.py
+  ✅ seed_data.py (20 QC lots, 10 complaints, 12 materials)
+
+[Agent] Running tests...
+  ✅ pytest backend/ -v → 24 passed
+  ✅ npm test → 18 tests passed
+
+[Agent] Starting dev servers...
+  Backend: http://localhost:8000
+  Frontend: http://localhost:3000
+
+✅ Done! Open http://localhost:3000</div></div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#1B7A3E">3D</div><div class="step-info"><div class="step-title">ใช้ Stitch Skills ใน Antigravity</div><div class="step-sub">Antigravity มี Skills พิเศษสำหรับ Stitch</div></div></div><div class="step-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px"><strong style="color:#1B7A3E">@stitch.generate_screen</strong><br><div style="font-size:12px;color:#5A6B7E;margin-top:4px">สร้าง UI screen ใหม่จาก prompt</div></div><div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px"><strong style="color:#1B7A3E">@stitch.edit_screen</strong><br><div style="font-size:12px;color:#5A6B7E;margin-top:4px">แก้ไข screen ที่มีอยู่</div></div><div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px"><strong style="color:#1B7A3E">@stitch.export_html_css</strong><br><div style="font-size:12px;color:#5A6B7E;margin-top:4px">export design เป็น HTML+CSS</div></div><div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px"><strong style="color:#1B7A3E">@stitch.create_variant</strong><br><div style="font-size:12px;color:#5A6B7E;margin-top:4px">สร้าง variant ของ design ที่มี</div></div><div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px"><strong style="color:#1B7A3E">@stitch.get_design_tokens</strong><br><div style="font-size:12px;color:#5A6B7E;margin-top:4px">ดึง color/typography tokens</div></div><div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px"><strong style="color:#1B7A3E">@stitch.create_design_system</strong><br><div style="font-size:12px;color:#5A6B7E;margin-top:4px">สร้าง design system ใหม่</div></div><div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px"><strong style="color:#1B7A3E">@stitch.export_to_figma</strong><br><div style="font-size:12px;color:#5A6B7E;margin-top:4px">ส่งออก design ไป Figma</div></div></div><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 ตัวอย่าง: ใช้ Stitch Skill ใน Antigravity</span><button class="copy-btn" onclick="copyPrompt('p_stitch_skill',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p_stitch_skill"># พิมพ์ใน Agent Tab ของ Antigravity:
+
+ใช้ @stitch.generate_screen สร้าง UI สำหรับ
+"Stock Monitor Alert Dashboard" ที่ยังขาดอยู่
+
+Requirements:
+- แสดงวัตถุดิบ 12 รายการพร้อม progress bar
+- วัตถุดิบ critical (&lt; 50%) = แดง, warning (&lt; 100%) = เหลือง
+- ปุ่ม "สั่งซื้อ" ท้ายแต่ละแถว
+- ใช้ design tokens จาก DESIGN.md
+
+แล้ว implement เป็น React component StockMonitor.tsx</pre></div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#1B7A3E">3E</div><div class="step-info"><div class="step-title">Iterate และ Refine</div><div class="step-sub">ให้ Antigravity แก้ไข</div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Prompt: แก้ไขส่วนที่ต้องการปรับ</span><button class="copy-btn" onclick="copyPrompt('p_ag_iterate',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p_ag_iterate">แก้ไขสิ่งต่อไปนี้:
+
+1. Dashboard: เพิ่ม badge "HOLD" สีแดงใน LOT ที่ fail
+   ให้มี pulsing animation เหมือนใน Stitch design
+
+2. QC Detail: Radar chart ต้องแสดง threshold line
+   ด้วยสีแดง dashed เปรียบเทียบกับค่าจริง
+
+3. API: เพิ่ม endpoint GET /api/summary
+   return: {today_pass, today_fail, active_alerts, pending_complaints}
+
+4. Mobile: ทำ responsive ให้ sidebar collapse บน &lt; 768px
+   แสดงเป็น hamburger menu
+
+รัน tests หลังแก้ไขทุกครั้ง</pre></div><div class="note">✅ <span>Antigravity จะแก้ไขทุกจุด รัน test เอง และแจ้งเมื่อเสร็จ — ไม่ต้องเขียน code เองเลย</span></div></div></div><div style="background:#D35400;border-radius:12px;padding:16px 20px;margin:32px 0 20px;display:flex;align-items:center;gap:14px">
+  <div style="font-size:32px">🚀</div>
+  <div>
+    <div style="color:rgba(255,255,255,.7);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase">Phase 4 · 15 นาที</div>
+    <div style="color:#fff;font-size:18px;font-weight:700;margin-top:2px">Vibe Deploy — Deploy ไป Google Cloud Run</div>
+    <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:2px">1 command จาก Antigravity → App บน Production URL</div>
+  </div>
+</div><div style="background:#FFF3EC;border:1px solid #FCA85E;border-radius:12px;padding:16px;margin-bottom:18px"><h4 style="color:#D35400;margin-bottom:8px">🚀 Cloud Run คืออะไร?</h4><div style="font-size:13px;line-height:1.8;color:#334155">Google Cloud Run — Serverless container hosting
+  <br>• Scale จาก 0 → 1000 requests อัตโนมัติ
+  <br>• <strong>ฟรี:</strong> 2 million requests/เดือน + 360,000 GB-seconds
+  <br>• HTTPS URL ให้ทันที ไม่ต้อง configure DNS
+  <br>• Deploy ด้วย 1 คำสั่ง (Antigravity ทำให้)</div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#D35400">4A</div><div class="step-info"><div class="step-title">สั่ง Antigravity Deploy — Cloud Run หรือ Firebase</div><div class="step-sub">v2 มี Firebase integration ใน-app แล้ว ไม่ต้องสลับ context</div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Deploy Prompt — ส่งให้ Antigravity</span><button class="copy-btn" onclick="copyPrompt('p_ag_deploy',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p_ag_deploy">Deploy CPF QC Dashboard — เลือก 1 ตัวเลือก:
+
+ตัวเลือก A — Cloud Run (v1 เดิม):
+  Deploy ไปยัง Google Cloud Run
+
+ตัวเลือก B — Firebase (ใหม่ใน v2):
+  Deploy ผ่าน Firebase Hosting + Cloud Functions
+  (Antigravity 2.0 มี Firebase integration โดยตรง)
+
+Requirements:
+1. Build Docker images (frontend + backend)
+2. Frontend: nginx serve static React build
+3. Backend: Uvicorn FastAPI
+4. Environment variables: ไม่ hardcode อะไร
+5. Backend URL: ต้องเป็น HTTPS
+6. Health check endpoint: GET /health → {status: "ok"}
+
+Deploy steps:
+1. docker build ทั้ง frontend และ backend
+2. gcloud run deploy cpf-qc-backend
+3. gcloud run deploy cpf-qc-frontend (inject BACKEND_URL)
+4. Test endpoints หลัง deploy
+
+แสดง final URLs เมื่อเสร็จ</pre></div><div class="screen-box" style="margin-bottom:14px"><div class="screen-head"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="screen-lbl">Antigravity — Deploy Process</span></div><div class="screen-body" style="line-height:1.85">[Agent] Building Docker images...
+
+  Backend Dockerfile:
+  FROM python:3.12-slim
+  WORKDIR /app
+  COPY requirements.txt .
+  RUN pip install -r requirements.txt
+  COPY . .
+  CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0"]
+
+  ✅ docker build -t cpf-qc-backend .
+  ✅ docker build -t cpf-qc-frontend ./frontend
+
+[Agent] Deploying to Cloud Run...
+  ✅ gcloud run deploy cpf-qc-backend \
+       --image cpf-qc-backend \
+       --platform managed \
+       --region asia-southeast1 \
+       --allow-unauthenticated
+
+  ✅ gcloud run deploy cpf-qc-frontend \
+       --image cpf-qc-frontend \
+       --set-env-vars REACT_APP_API_URL=https://cpf-qc-backend-xxxxx.run.app
+
+[Agent] Testing deployments...
+  ✅ GET https://cpf-qc-backend-xxxxx.run.app/health → 200 OK
+  ✅ GET https://cpf-qc-frontend-xxxxx.run.app → 200 OK
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ DEPLOYMENT COMPLETE!
+
+🌐 Frontend: https://cpf-qc-frontend-xxxxx.run.app
+🔌 Backend:  https://cpf-qc-backend-xxxxx.run.app
+📚 API Docs: https://cpf-qc-backend-xxxxx.run.app/docs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div></div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#D35400">4B</div><div class="step-info"><div class="step-title">Test Production App</div><div class="step-sub">ตรวจสอบว่าทุกอย่างทำงานบน Production</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>เปิด URL Frontend ที่ได้ในเบราว์เซอร์</span></li><li><span class="n" style="background:#0D2137">2</span><span>ทดสอบ Dashboard: ดู stat cards และ charts</span></li><li><span class="n" style="background:#0D2137">3</span><span>กด LOT ที่ fail → ดู QC Detail page</span></li><li><span class="n" style="background:#0D2137">4</span><span>กรอก Complaint Form → Submit → ตรวจสอบใน Complaint List</span></li><li><span class="n" style="background:#0D2137">5</span><span>เปิด <code>/docs</code> บน Backend URL → ดู Swagger API documentation</span></li></ul><div class="note">✅ <span>API Docs URL สำหรับ CPF IT Team ใช้ทดสอบ endpoints ก่อน integrate กับ ERP/SAP</span></div></div></div><h2 class="section-title">Tips & Best Practices — Stitch + Antigravity</h2><div style="overflow-x:auto;margin-bottom:14px"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#0D2137;color:#fff"><th style="padding:9px 14px;text-align:left;border:1px solid #334155">หัวข้อ</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">Best Practice</th></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0">Stitch Prompt</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ระบุ platform, color scheme, font, และ accessibility requirement ให้ครบ</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">Design Consistency</td><td style="padding:9px 14px;border:1px solid #E2E8F0">สร้าง DESIGN.md ก่อนเสมอ — Agent ทุกตัวจะยึด file นี้</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0">Antigravity Instructions</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ใช้ 'senior-level' instructions เช่น 'ใช้ TypeScript strict mode' ได้ code สะอาดกว่า</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">Planning Mode</td><td style="padding:9px 14px;border:1px solid #E2E8F0">เปิด Planning Mode ก่อน Agent จะแสดง plan รอ approve — ลดการทำงานผิด</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0">MCP Stitch</td><td style="padding:9px 14px;border:1px solid #E2E8F0">เรียก @stitch.generate_screen สำหรับ screen ใหม่ โดยไม่ต้องกลับไปเปิด browser</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">Iteration</td><td style="padding:9px 14px;border:1px solid #E2E8F0">แก้ทีละส่วน อย่าส่ง prompt เปลี่ยนทุกอย่างพร้อมกัน — Agent จะ confused</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0">Git Checkpoint</td><td style="padding:9px 14px;border:1px solid #E2E8F0">git commit ก่อนสั่ง mission ใหญ่ทุกครั้ง</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">Test First</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ใส่ 'รัน tests หลังแก้ไขทุกครั้ง' ใน prompt — Antigravity จะทำให้อัตโนมัติ</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0">🆕 Dynamic Subagents</td><td style="padding:9px 14px;border:1px solid #E2E8F0">บอกให้ Agent ใช้ subagents สำหรับงานที่ทำพร้อมกันได้ เช่น "สร้างทั้ง 3 หน้าพร้อมกัน ใช้ subagents คู่ขนาน"</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">🆕 Scheduled Tasks</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ตั้ง background task สำหรับงานซ้ำ เช่น "รัน QC report ทุกวันเที่ยงคืน" — ไม่ต้องเปิด app</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0">🆕 Voice Commands</td><td style="padding:9px 14px;border:1px solid #E2E8F0">กดไมค์แล้วพูด prompt ภาษาอังกฤษได้เลย — เหมาะกับ brainstorm ขณะเดิน</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">🆕 CLI Mode</td><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>antigravity agent run "task"</code> รัน Agent ใน terminal ได้ — เหมาะกับ CI/CD pipeline</td></tr></table></div><div class="warn">⚠️ <span><strong>Antigravity 2.0</strong> (ออกมา พ.ค. 2026) เป็น standalone app แยกจาก IDE 1.0 — หาก update จาก 1.0 ระบบจะถามว่าต้องการเก็บ IDE 1.0 ไว้ด้วยหรือเปล่า (แนะนำ: เก็บไว้) · Stitch ยังคง experimental — ตรวจสอบ release notes ล่าสุดที่ <a href="https://antigravity.google" target="_blank">antigravity.google</a></span></div><h2 class="section-title">เปรียบเทียบ Stitch + Antigravity กับ tools อื่น</h2><div style="overflow-x:auto;margin-bottom:14px"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#0D2137;color:#fff"><th style="padding:9px 14px;text-align:left;border:1px solid #334155">Tool</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">Design</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">Code</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">Deploy</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">ฟรี</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">เหมาะกับ</th></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><strong>Stitch + Antigravity 2.0</strong> 🆕</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">✅ Pro ฟรี / Ultra $100</td><td style="padding:9px 14px;border:1px solid #E2E8F0">Full-stack, subagents, CLI, Firebase, Google ecosystem</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">Lovable</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">❌ 5 credits/วัน</td><td style="padding:9px 14px;border:1px solid #E2E8F0">มือใหม่ที่ต้องการ all-in-one</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0">v0 by Vercel</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">❌ $5/เดือน</td><td style="padding:9px 14px;border:1px solid #E2E8F0">Dev ที่ต้องการ React components</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0">Firebase Studio</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">⭐⭐⭐⭐⭐</td><td style="padding:9px 14px;border:1px solid #E2E8F0">✅ Firebase free</td><td style="padding:9px 14px;border:1px solid #E2E8F0">Google Firebase users</td></tr></table></div>
+  <div class="nav-footer"><a href="module-multiagent.html" class="nav-btn">← Multi-Agent Workflows</a><a href="module-claudecode.html" class="nav-btn primary">Module 05D: Claude Code →</a></div>
+</main>
+
+<script>
+function copyPrompt(id,btn){
+  var t=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(function(){
+    var o=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';
+    btn.style.background='#1B7A3E';btn.style.color='#fff';
+    setTimeout(function(){btn.textContent=o;btn.style.background='';btn.style.color='';},2000);
+  }).catch(function(){btn.textContent='(เลือกด้วยมือ)';});
+}
+var path=window.location.pathname.split('/').pop();
+document.querySelectorAll('.sidebar a').forEach(function(a){
+  if(a.getAttribute('href')===path)a.classList.add('active');
+});
+function showTab(group,id){
+  document.querySelectorAll('.tab-content[data-group="'+group+'"]').forEach(function(el){el.classList.remove('on');});
+  document.querySelectorAll('.tab-btn[data-group="'+group+'"]').forEach(function(el){el.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+  document.querySelector('.tab-btn[data-target="'+id+'"]').classList.add('on');
+}
+</script>
+
+</body>
+</html>

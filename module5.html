@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>n8n Local — Docker, Port, Volume, Compose — CPF AI Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --navy:#0D2137;--blue:#1A4A7A;--sky:#2979C8;
+  --accent:#E85D04;--acl:#FFF3EC;
+  --green:#1B7A3E;--gcl:#EDFAF2;
+  --red:#C0392B;--rcl:#FEF0EE;
+  --amber:#B45309;--acl2:#FFFBEB;
+  --orange:#D35400;--ocl:#FEF3EC;
+  --purple:#6D28D9;--pcl:#F5F3FF;
+  --teal:#0F766E;--tcl:#F0FDFA;
+  --gray50:#F8FAFC;--gray100:#F1F5F9;--gray200:#E2E8F0;
+  --gray400:#94A3B8;--gray600:#475569;--gray800:#1E293B;
+  --text:#1A2332;--muted:#5A6B7E;--sidebar:220px;
+  --font:'Sarabun',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--text);background:#fff;
+     display:flex;min-height:100vh;font-size:15px;line-height:1.7}
+.sidebar{width:var(--sidebar);background:var(--navy);position:fixed;
+  top:0;left:0;height:100vh;overflow-y:auto;flex-shrink:0;z-index:100}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo .brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.sidebar-section{padding:10px 0 4px 18px;font-size:10px;color:rgba(255,255,255,.35);
+  text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:8px 18px;
+  font-size:13px;color:rgba(255,255,255,.65);text-decoration:none;
+  border-left:3px solid transparent;transition:all .15s}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sidebar a.active{color:#fff;background:rgba(41,121,200,.25);border-left-color:var(--sky)}
+.sidebar a .mn{font-size:10px;background:rgba(255,255,255,.12);
+  border-radius:4px;padding:1px 6px;font-family:var(--mono)}
+.main{margin-left:var(--sidebar);flex:1;max-width:820px;padding:40px 48px 80px}
+.page-header{border-bottom:2px solid var(--navy);padding-bottom:20px;margin-bottom:36px}
+.module-num{font-size:11px;font-weight:600;color:var(--sky);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:6px}
+.page-title{font-size:30px;font-weight:700;color:var(--navy);line-height:1.2}
+.page-desc{font-size:15px;color:var(--muted);margin-top:8px;line-height:1.6}
+.meta-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+  border-radius:20px;font-size:12px;font-weight:500;border:1px solid}
+.section-title{font-size:18px;font-weight:700;color:var(--navy);
+  margin:36px 0 18px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gray200)}
+.step{background:#fff;border:1px solid var(--gray200);border-radius:12px;
+  margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.step:hover{border-color:var(--sky)}
+.step-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--sky);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.step-info{flex:1}
+.step-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.step-sub{font-size:13px;color:var(--muted)}
+.step-body{padding:0 20px 18px 66px}
+.inst-list{background:var(--gray50);border-radius:8px;padding:14px 16px;
+  list-style:none;margin-bottom:14px}
+.inst-list li{display:flex;gap:10px;padding:5px 0;font-size:13px;
+  border-bottom:1px solid var(--gray200)}
+.inst-list li:last-child{border-bottom:none;padding-bottom:0}
+.inst-list li .n{min-width:20px;height:20px;border-radius:50%;
+  background:var(--navy);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.prompt-box{border:1px solid #C7D9F5;border-radius:10px;background:#F0F6FF;
+  margin-bottom:14px;overflow:hidden}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:#E3EEFF;border-bottom:1px solid #C7D9F5}
+.prompt-label{font-size:10px;font-weight:700;color:var(--sky);
+  text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;
+  border:1px solid #A0BBE8;background:#fff;color:var(--sky);font-weight:500;
+  font-family:var(--font)}
+.copy-btn:hover{background:var(--sky);color:#fff}
+.prompt-body{padding:14px 16px;font-size:12px;line-height:1.8;
+  white-space:pre-wrap;font-family:var(--mono);color:var(--gray800)}
+.screen-box{background:#0D1117;border-radius:10px;margin-bottom:14px;overflow:hidden}
+.screen-head{background:#21262D;padding:8px 14px;display:flex;align-items:center;gap:6px}
+.dot-r{width:10px;height:10px;border-radius:50%;background:#FF5F57}
+.dot-y{width:10px;height:10px;border-radius:50%;background:#FFBD2E}
+.dot-g{width:10px;height:10px;border-radius:50%;background:#28CA41}
+.screen-lbl{font-size:11px;color:#8B949E;margin-left:6px;font-family:var(--mono)}
+.screen-body{padding:16px 18px;font-size:12px;color:#C9D1D9;
+  font-family:var(--mono);line-height:1.8;white-space:pre}
+.tip{background:var(--acl2);border-left:4px solid var(--accent);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--amber);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.note{background:var(--gcl);border-left:4px solid var(--green);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--green);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.warn{background:var(--rcl);border-left:4px solid var(--red);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--red);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.info-box{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px}
+.info-box h4{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px}
+.output-box{border-left:3px solid var(--green);border-radius:0 8px 8px 0;
+  background:var(--gcl);padding:14px 16px;margin-bottom:14px}
+.output-label{font-size:10px;font-weight:700;color:var(--green);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.output-body{font-size:12px;line-height:1.8;white-space:pre-wrap;
+  color:var(--gray800);font-family:var(--mono)}
+.chat-demo{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px;margin-bottom:14px}
+.chat-u{background:var(--sky);color:#fff;border-radius:12px 12px 3px 12px;
+  padding:8px 12px;font-size:13px;max-width:70%;margin-left:auto;
+  margin-bottom:8px;line-height:1.6}
+.chat-ai{background:#fff;border:1px solid var(--gray200);
+  border-radius:12px 12px 12px 3px;padding:8px 12px;font-size:13px;
+  max-width:85%;margin-bottom:8px;line-height:1.6}
+.chat-name{font-size:10px;color:var(--gray400);margin-bottom:3px}
+.badge{display:inline-block;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600}
+.wf-box{border:1px solid var(--gray200);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.wf-title{background:var(--navy);color:#fff;padding:10px 16px;
+  font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.wf-body{padding:14px 16px}
+.wf-row{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-bottom:6px}
+.wf-node{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:8px;padding:6px 12px;font-size:12px;text-align:center;min-width:120px}
+.wf-arrow{color:var(--gray400);font-size:18px;padding:0 6px;flex-shrink:0}
+.wf-node.trigger{background:#E3EEFF;border-color:#A0BBE8;color:var(--blue)}
+.wf-node.ai{background:#F5F3FF;border-color:#C4B5FD;color:var(--purple)}
+.wf-node.action{background:#EDFAF2;border-color:#86EFAC;color:var(--green)}
+.wf-node.cond{background:#FFFBEB;border-color:#FCD34D;color:var(--amber)}
+.wf-node.data{background:#F0FDFA;border-color:#5EEAD4;color:var(--teal)}
+.wf-node.notify{background:#FFF3EC;border-color:#FCA85E;color:var(--orange)}
+@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative}
+  .main{margin-left:0;padding:24px 20px 60px}body{flex-direction:column}}
+.nav-footer{display:flex;justify-content:space-between;
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--gray200)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+  border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;
+  border:1px solid var(--gray200);color:var(--navy);transition:all .15s}
+.nav-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav-btn.primary{background:var(--sky);color:#fff;border-color:var(--sky)}
+.nav-btn.primary:hover{background:var(--navy)}
+.llm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.llm-card{border:1px solid var(--gray200);border-radius:10px;padding:14px;text-align:center}
+.llm-logo{font-size:28px;margin-bottom:6px}
+.llm-name{font-size:13px;font-weight:600;color:var(--navy)}
+.llm-note{font-size:11px;color:var(--muted);margin-top:2px}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--gray200);padding-bottom:-2px}
+.tab-btn{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;
+  border:none;background:none;color:var(--muted);border-bottom:2px solid transparent;
+  margin-bottom:-2px;font-family:var(--font);transition:all .15s}
+.tab-btn.on{color:var(--sky);border-bottom-color:var(--sky)}
+.tab-content{display:none}.tab-content.on{display:block}
+</style>
+</head>
+<body>
+<nav class="sidebar"><div class="sidebar-logo"><div class="brand">🐔 CPF AI Workshop</div><div class="sub">คู่มือประกอบการสอน 2569</div></div><div class="sidebar-section">Modules</div><a href="index.html"><span class="mn">🏠</span>ภาพรวม Workshop</a><a href="module1.html"><span class="mn">01</span>AI Agent คืออะไร + MCP</a><a href="module2.html"><span class="mn">02</span>Claude.ai — เริ่มต้น</a><a href="module3.html"><span class="mn">03</span>Workshop Labs</a><a href="module4.html"><span class="mn">04</span>Dify — Chatbot Builder</a><a href="module4b.html"><span class="mn">04B</span>n8n Cloud + LLM</a><a href="module5.html"><span class="mn">05</span>n8n — Local Install</a><a href="module-multiagent.html"><span class="mn">05B</span>Multi-Agent Workflows</a><a href="module-stitch.html"><span class="mn">05C</span>Stitch + Antigravity 🆕</a><a href="module-claudecode.html"><span class="mn">05D</span>Claude Code</a><a href="module-claudecode-project.html"><span class="mn">05E</span>Full Stack Project 🆕</a><a href="module6.html"><span class="mn">06</span>MCP Protocol</a><a href="module7.html"><span class="mn">07</span>Capstone Project</a></nav>
+<main class="main">
+  <header class="page-header" style="border-bottom-color:#0891B2">
+    <div class="module-num" style="color:#0891B2">Module 05 · 60 นาที</div>
+    <h1 class="page-title">n8n Local — Docker, Port, Volume, Compose</h1>
+    <p class="page-desc">ติดตั้ง n8n Local ด้วย Docker พร้อมอธิบาย Port Mapping, Volume Mapping, docker-compose.yml ทุก field และ 4 Workflows CPF</p>
+    <div class="meta-pills"><span class="pill" style="background:#0891B215;border-color:#0891B240;color:#0891B2">Docker</span><span class="pill" style="background:#1A4A7A15;border-color:#1A4A7A40;color:#1A4A7A">Port Mapping</span><span class="pill" style="background:#1B7A3E15;border-color:#1B7A3E40;color:#1B7A3E">Volume</span><span class="pill" style="background:#E85D0415;border-color:#E85D0440;color:#E85D04">docker-compose</span><span class="pill" style="background:#6D28D915;border-color:#6D28D940;color:#6D28D9">PostgreSQL</span><span class="pill" style="background:#5A6B7E15;border-color:#5A6B7E40;color:#5A6B7E">60 นาที</span></div>
+  </header>
+  
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px">
+  <div style="background:#EDFAF2;border:1px solid #86EFAC;border-radius:10px;padding:14px;font-size:13px">
+    <div style="font-weight:600;color:#1B7A3E;margin-bottom:8px">✅ ข้อดี n8n Local</div>
+    <div style="line-height:1.9">• ฟรีไม่จำกัด execution<br>• ข้อมูลอยู่ในองค์กร<br>• ไม่มีค่า subscription<br>• เชื่อม internal DB/VPN ได้</div>
+  </div>
+  <div style="background:#FEF0EE;border:1px solid #FCA5A5;border-radius:10px;padding:14px;font-size:13px">
+    <div style="font-weight:600;color:#C0392B;margin-bottom:8px">⚠️ ต้องเตรียม</div>
+    <div style="line-height:1.9">• Docker Desktop (ติดตั้งก่อน)<br>• RAM ≥ 4 GB<br>• เปิดเครื่องทิ้งไว้ถ้าต้อง Schedule<br>• ดูแล update เอง</div>
+  </div>
+</div>
+<h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 1 — ติดตั้ง Docker Desktop</h2><div class="step"><div class="step-header"><div class="step-num" style="background:#0891B2">1</div><div class="step-info"><div class="step-title">ดาวน์โหลดและติดตั้ง Docker Desktop</div><div class="step-sub">จำเป็นต้องมีก่อนใช้ n8n Local</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>เปิด <a href='https://docker.com' target='_blank'><strong>docker.com</strong></a> → Download Docker Desktop</span></li><li><span class="n" style="background:#0D2137">2</span><span>เลือก OS: <strong>Windows (AMD64)</strong> หรือ <strong>macOS (Apple/Intel)</strong></span></li><li><span class="n" style="background:#0D2137">3</span><span>รัน installer ทำตามขั้นตอน → Restart เครื่อง</span></li><li><span class="n" style="background:#0D2137">4</span><span>เปิด Docker Desktop รอ status เป็น <strong>Engine running 🟢</strong></span></li><li><span class="n" style="background:#0D2137">5</span><span>ทดสอบใน Terminal: <code>docker --version</code></span></li></ul><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">ผลลัพธ์ที่ถูกต้อง</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9">$ docker --version
+Docker version 26.1.3, build b72abbb
+
+$ docker compose version
+Docker Compose version v2.27.1
+
+✅ พร้อมติดตั้ง n8n แล้ว</div>
+</div></div></div><h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 2 — Port Mapping คืออะไร?</h2><div class="step"><div class="step-header"><div class="step-num" style="background:#0891B2">2</div><div class="step-info"><div class="step-title">อธิบาย -p HOST:CONTAINER</div><div class="step-sub">Flag สำคัญในทุก docker command</div></div></div><div class="step-body"><p style="font-size:13px;line-height:1.7;margin-bottom:12px">
+  Port เปรียบเหมือน <strong>ประตูบ้าน</strong> — Container มีประตูของตัวเอง (port 5678) แต่ต้องบอก Docker ว่าจะเชื่อม "ประตูเครื่องเรา" กับ "ประตู Container" ยังไง
+  </p><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">วิธีอ่าน -p flag</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9">  docker run -p  5678 : 5678  n8nio/n8n
+              ↑         ↑
+              │         └─ port ของ Container (n8n ฟัง port นี้เสมอ)
+              └─────────── port ของเครื่องเรา (Host)
+
+  เข้าใช้งาน → เปิดเบราว์เซอร์ http://localhost:5678</div>
+</div><div style="overflow-x:auto;margin-bottom:14px"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#0D2137;color:#fff"><th style="padding:9px 14px;text-align:left;border:1px solid #334155">ตัวอย่าง</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">เข้าผ่าน</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">เมื่อไหร่ใช้</th></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>-p 5678:5678</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">localhost:5678</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ปกติ ✅ แนะนำ</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>-p 8080:5678</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">localhost:8080</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ถ้า 5678 ถูกโปรแกรมอื่นใช้</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>-p 127.0.0.1:5678:5678</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">localhost:5678</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ปลอดภัยสุด — เครื่องอื่นใน LAN เข้าไม่ได้</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>-p 0.0.0.0:5678:5678</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">IP_เครื่อง:5678</td><td style="padding:9px 14px;border:1px solid #E2E8F0">เปิดให้ทีมใน LAN เข้าได้</td></tr></table></div><div class="tip">💡 <span>Production CPF: ใช้ <code>127.0.0.1:5678:5678</code> แล้วตั้ง Nginx Reverse Proxy เปิดออกภายนอก</span></div></div></div><h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 3 — Volume Mapping คืออะไร?</h2><div class="step"><div class="step-header"><div class="step-num" style="background:#0891B2">3</div><div class="step-info"><div class="step-title">อธิบาย -v และ volumes — ป้องกันข้อมูลหาย</div><div class="step-sub">ไม่ตั้ง Volume = ข้อมูลหายทุกครั้งที่ลบ Container</div></div></div><div class="step-body"><p style="font-size:13px;line-height:1.7;margin-bottom:12px">
+  Container เปรียบเหมือน <strong>กล่องทราย</strong> — ข้อมูลภายในหายทันทีเมื่อลบ Container<br>
+  Volume คือ <strong>โฟลเดอร์พิเศษนอก Container</strong> ทำให้ Workflow และ Credentials รอดเสมอ
+  </p><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">Volume Mapping — 2 แบบ</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9">── แบบที่ 1: Bind Mount — ชี้ไปโฟลเดอร์จริงบนเครื่อง ──────
+  -v /home/cpf/n8n-data : /home/node/.n8n
+     ↑                     ↑
+     โฟลเดอร์บน Host       โฟลเดอร์ใน Container (คงที่เสมอ)
+
+  Windows: -v C:/cpf-data:/home/node/.n8n
+
+── แบบที่ 2: Named Volume — Docker จัดการให้ ──────────────
+  -v n8n_data : /home/node/.n8n
+     ↑           ↑
+     ชื่อ Volume  โฟลเดอร์ใน Container
+     Docker สร้างและเก็บไว้ใน /var/lib/docker/volumes/</div>
+</div><div style="overflow-x:auto;margin-bottom:14px"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#0D2137;color:#fff"><th style="padding:9px 14px;text-align:left;border:1px solid #334155">ประเภท</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">ตัวอย่าง</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">ข้อดี</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">ข้อเสีย</th></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><strong>Bind Mount</strong></td><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>-v /cpf/data:/home/node/.n8n</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">เห็นไฟล์ได้โดยตรง</td><td style="padding:9px 14px;border:1px solid #E2E8F0">permission issue บน Windows</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0"><strong>Named Volume</strong></td><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>-v n8n_data:/home/node/.n8n</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">ง่าย ไม่มี permission issue</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ดูไฟล์ต้องใช้ docker cp</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><strong>Read-only</strong></td><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>-v ./files:/cpf_data:ro</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">ปลอดภัย Container อ่านได้อย่างเดียว</td><td style="padding:9px 14px;border:1px solid #E2E8F0">แก้ไขไฟล์จาก container ไม่ได้</td></tr></table></div><div style="background:#F0F6FF;border:1px solid #C7D9F5;border-radius:8px;padding:14px;font-size:13px;margin-bottom:12px">
+  <strong>📌 /home/node/.n8n คือที่เก็บอะไร?</strong><br><br>
+  <code>/home/node/.n8n/database.sqlite</code> — Workflows, Credentials, Settings ทั้งหมด<br>
+  <code>/home/node/.n8n/config</code> — ไฟล์ configuration<br>
+  <code>/home/node/.n8n/nodes/</code> — Custom nodes ที่ติดตั้งเพิ่ม<br><br>
+  <strong>→ Volume mapping ที่ path นี้เพียงอย่างเดียวก็พอสำหรับ backup ทุกอย่าง</strong>
+  </div><div class="note">✅ <span>แนะนำ <strong>Named Volume</strong> สำหรับมือใหม่ เพราะ Docker จัดการให้ทั้งหมด ไม่มี permission error</span></div></div></div><h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 4 — docker run command สมบูรณ์</h2><div class="step"><div class="step-header"><div class="step-num" style="background:#0891B2">4</div><div class="step-info"><div class="step-title">รัน n8n ด้วย docker run — อธิบายทุก flag</div><div class="step-sub">เหมาะสำหรับทดลอง</div></div></div><div class="step-body"><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">docker run — annotated ทุก flag</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9">docker run \
+  --name n8n \              ← ตั้งชื่อ container
+  --restart unless-stopped \ ← auto-start เมื่อ Docker เปิด
+  -p 5678:5678 \            ← PORT: host:container
+  -v n8n_data:/home/node/.n8n \ ← VOLUME: named volume
+  -e GENERIC_TIMEZONE=Asia/Bangkok \ ← ตั้ง timezone ไทย
+  -e N8N_BASIC_AUTH_ACTIVE=true \    ← เปิดระบบ login
+  -e N8N_BASIC_AUTH_USER=admin \     ← username
+  -e N8N_BASIC_AUTH_PASSWORD=cpf2569! \ ← password
+  -d \                      ← detached (รันใน background)
+  n8nio/n8n:latest           ← Docker image</div>
+</div><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 docker run ฉบับสมบูรณ์ (copy ได้เลย)</span><button class="copy-btn" onclick="copyPrompt('p5_docker_run',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p5_docker_run">docker run \
+  --name n8n \
+  --restart unless-stopped \
+  -p 5678:5678 \
+  -v n8n_data:/home/node/.n8n \
+  -e GENERIC_TIMEZONE=Asia/Bangkok \
+  -e N8N_BASIC_AUTH_ACTIVE=true \
+  -e N8N_BASIC_AUTH_USER=admin \
+  -e N8N_BASIC_AUTH_PASSWORD=cpf2569! \
+  -d \
+  n8nio/n8n:latest</pre></div><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">ผลลัพธ์หลังรัน</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9">$ docker run --name n8n ... -d n8nio/n8n:latest
+Unable to find image 'n8nio/n8n:latest' locally
+latest: Pulling from n8nio/n8n  ← กำลัง download (ครั้งแรกเท่านั้น)
+...
+a3f2b1c9d4e8f7a1b2c3d4e5   ← Container ID
+
+$ docker ps
+CONTAINER ID   IMAGE        STATUS    PORTS
+a3f2b1c9d4e8   n8nio/n8n    Up 30s    0.0.0.0:5678-&gt;5678/tcp
+
+✅ เปิด http://localhost:5678 ได้เลย</div>
+</div></div></div><h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 5 — Docker Compose (แนะนำสำหรับ CPF)</h2>
+<div style="background:#F0F6FF;border:1px solid #C7D9F5;border-radius:12px;padding:16px;margin-bottom:20px;font-size:13px">
+  <h4 style="color:#1A4A7A;margin-bottom:10px">🆚 ทำไม docker compose ดีกว่า docker run?</h4>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div>
+      <div style="font-weight:600;color:#C0392B;margin-bottom:4px">❌ docker run</div>
+      <div style="line-height:1.8;color:#5A6B7E">• พิมพ์ command ยาวทุกครั้ง<br>• จำยาก ผิดง่าย<br>• ไม่มี version control<br>• share ทีมลำบาก</div>
+    </div>
+    <div>
+      <div style="font-weight:600;color:#1B7A3E;margin-bottom:4px">✅ docker compose</div>
+      <div style="line-height:1.8;color:#5A6B7E">• <code>docker compose up -d</code> คำสั่งเดียว<br>• config อยู่ในไฟล์ แก้ง่าย<br>• เก็บใน Git ได้<br>• รวม services หลายตัวได้</div>
+    </div>
+  </div>
+</div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#0891B2">5A</div><div class="step-info"><div class="step-title">สร้างไฟล์ docker-compose.yml — Basic</div><div class="step-sub">1 service: n8n อย่างเดียว</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>สร้างโฟลเดอร์: <code>mkdir cpf-n8n && cd cpf-n8n</code></span></li><li><span class="n" style="background:#0D2137">2</span><span>สร้างไฟล์ชื่อ <strong>docker-compose.yml</strong> (ตรงๆ ไม่มีนามสกุลอื่น)</span></li><li><span class="n" style="background:#0D2137">3</span><span>วาง content จาก prompt ด้านล่างลงไปในไฟล์</span></li><li><span class="n" style="background:#0D2137">4</span><span>รัน: <code>docker compose up -d</code></span></li><li><span class="n" style="background:#0D2137">5</span><span>ตรวจสอบ: <code>docker compose ps</code></span></li><li><span class="n" style="background:#0D2137">6</span><span>เปิด <strong>http://localhost:5678</strong></span></li></ul><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">docker-compose.yml Basic — อธิบายทุก field</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9">version: "3.8"              # Compose format version
+
+services:                   # ประกาศ services ทั้งหมด
+  n8n:                      # ชื่อ service (ตั้งเองได้)
+    image: n8nio/n8n:latest # Docker image ที่ใช้
+
+    restart: always         # รีสตาร์ทอัตโนมัติทุกกรณี
+                            # ค่าอื่น: no, on-failure, unless-stopped
+
+    ports:                  # Port Mapping section
+      - "5678:5678"         # "host_port:container_port"
+
+    environment:            # Environment Variables
+      - GENERIC_TIMEZONE=Asia/Bangkok    # timezone ไทย
+      - N8N_BASIC_AUTH_ACTIVE=true       # เปิดระบบ login
+      - N8N_BASIC_AUTH_USER=admin        # username
+      - N8N_BASIC_AUTH_PASSWORD=cpf2569! # password
+      - N8N_LOG_LEVEL=info               # debug/info/warn/error
+      - N8N_EXECUTIONS_DATA_PRUNE=true   # ลบ log เก่าอัตโนมัติ
+      - N8N_EXECUTIONS_DATA_MAX_AGE=168  # เก็บ log 7 วัน
+
+    volumes:                # Volume Mapping section
+      - n8n_data:/home/node/.n8n   # named volume → เก็บ workflows
+      - ./local_files:/files       # bind mount → โฟลเดอร์ในเครื่อง
+
+volumes:                    # ประกาศ named volumes
+  n8n_data:                 # Docker จัดการ volume นี้ให้</div>
+</div><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 docker-compose.yml Basic (copy ได้เลย)</span><button class="copy-btn" onclick="copyPrompt('p5_compose_basic',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p5_compose_basic">version: "3.8"
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Asia/Bangkok
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=cpf2569!
+      - N8N_LOG_LEVEL=info
+      - N8N_EXECUTIONS_DATA_PRUNE=true
+      - N8N_EXECUTIONS_DATA_MAX_AGE=168
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:</pre></div><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">Terminal — รัน Docker Compose</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9"># ① สร้างโฟลเดอร์และไฟล์
+mkdir cpf-n8n
+cd cpf-n8n
+# วางไฟล์ docker-compose.yml ในโฟลเดอร์นี้
+
+# ② รัน (ครั้งแรก download image อัตโนมัติ)
+docker compose up -d
+
+# ③ ตรวจสอบ status
+docker compose ps
+
+# ผลลัพธ์ที่ถูกต้อง:
+NAME               STATUS    PORTS
+cpf-n8n-n8n-1      running   0.0.0.0:5678-&gt;5678/tcp
+
+# ④ เปิดเบราว์เซอร์
+http://localhost:5678  ← n8n พร้อมใช้งาน</div>
+</div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#0891B2">5B</div><div class="step-info"><div class="step-title">docker-compose.yml — Production พร้อม PostgreSQL</div><div class="step-sub">เหมาะกับงานจริงที่มี Workflow เยอะ</div></div></div><div class="step-body"><p style="font-size:13px;margin-bottom:14px">
+  n8n ใช้ SQLite โดย default — เหมาะทดลอง<br>
+  Production ที่รัน Workflow หลายตัวพร้อมกัน ควรเปลี่ยนเป็น <strong>PostgreSQL</strong>
+  </p><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">docker-compose.yml Production + PostgreSQL — อธิบายทุก field</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9">version: "3.8"
+
+services:
+
+  # ─── Service 1: PostgreSQL Database ───────────────────────
+  db:
+    image: postgres:15-alpine    # Alpine = ขนาดเล็ก เร็ว
+    restart: always
+    environment:
+      POSTGRES_DB: n8n           # ชื่อ database
+      POSTGRES_USER: n8nuser     # username
+      POSTGRES_PASSWORD: cpf_db_2569!  # password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # เก็บข้อมูล DB
+    networks:
+      - n8n-net                  # อยู่ใน network เดียวกับ n8n
+    healthcheck:                 # ตรวจว่า DB พร้อมก่อน n8n start
+      test: ["CMD-SHELL", "pg_isready -U n8nuser"]
+      interval: 10s              # ตรวจทุก 10 วินาที
+      timeout: 5s                # timeout 5 วินาที
+      retries: 5                 # ลองซ้ำ 5 ครั้ง
+
+  # ─── Service 2: n8n Application ───────────────────────────
+  n8n:
+    image: n8nio/n8n:latest
+    restart: always
+    depends_on:                  # รอ db healthy ก่อน start
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5678:5678"   # local-only (ปลอดภัยกว่า)
+    environment:
+      # --- Authentication ---
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=cpf2569!
+      # --- Database Connection ---
+      - DB_TYPE=postgresdb            # บอก n8n ให้ใช้ PostgreSQL
+      - DB_POSTGRESDB_HOST=db         # ชื่อ service (Docker resolve ให้)
+      - DB_POSTGRESDB_PORT=5432       # port PostgreSQL
+      - DB_POSTGRESDB_DATABASE=n8n    # ชื่อ database
+      - DB_POSTGRESDB_USER=n8nuser    # ต้องตรงกับ POSTGRES_USER
+      - DB_POSTGRESDB_PASSWORD=cpf_db_2569!  # ต้องตรงกัน
+      # --- Timezone &amp; Performance ---
+      - GENERIC_TIMEZONE=Asia/Bangkok
+      - N8N_EXECUTIONS_DATA_PRUNE=true
+      - N8N_EXECUTIONS_DATA_MAX_AGE=168
+      - N8N_CONCURRENCY_PRODUCTION_LIMIT=10  # จำกัด concurrent workflows
+    volumes:
+      - n8n_data:/home/node/.n8n    # เก็บ config, credentials
+      - ./cpf_files:/cpf_data:ro    # :ro = read-only (ปลอดภัยกว่า)
+    networks:
+      - n8n-net
+
+# ─── Named Volumes ─────────────────────────────────────────
+volumes:
+  postgres_data:    # Docker เก็บข้อมูล PostgreSQL ให้
+  n8n_data:        # Docker เก็บ n8n workflows/credentials ให้
+
+# ─── Internal Network ──────────────────────────────────────
+networks:
+  n8n-net:
+    driver: bridge  # container คุยกันภายในได้ แต่ปิดจากภายนอก</div>
+</div><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 docker-compose.yml Production (copy ได้เลย)</span><button class="copy-btn" onclick="copyPrompt('p5_compose_prod',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p5_compose_prod">version: "3.8"
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: n8n
+      POSTGRES_USER: n8nuser
+      POSTGRES_PASSWORD: cpf_db_2569!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - n8n-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U n8nuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  n8n:
+    image: n8nio/n8n:latest
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=cpf2569!
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=n8nuser
+      - DB_POSTGRESDB_PASSWORD=cpf_db_2569!
+      - GENERIC_TIMEZONE=Asia/Bangkok
+      - N8N_EXECUTIONS_DATA_PRUNE=true
+      - N8N_EXECUTIONS_DATA_MAX_AGE=168
+      - N8N_CONCURRENCY_PRODUCTION_LIMIT=10
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./cpf_files:/cpf_data:ro
+    networks:
+      - n8n-net
+
+volumes:
+  postgres_data:
+  n8n_data:
+
+networks:
+  n8n-net:
+    driver: bridge</pre></div></div></div><h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 6 — คำสั่ง Docker Compose ที่ใช้บ่อย</h2><div class="step"><div class="step-header"><div class="step-num" style="background:#0891B2">6</div><div class="step-info"><div class="step-title">Commands ครบชุด</div><div class="step-sub">จำแค่ 5-6 คำสั่งนี้ก็พอ</div></div></div><div class="step-body"><div style="overflow-x:auto;margin-bottom:14px"><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#0D2137;color:#fff"><th style="padding:9px 14px;text-align:left;border:1px solid #334155">คำสั่ง</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">หน้าที่</th><th style="padding:9px 14px;text-align:left;border:1px solid #334155">เมื่อไหร่ใช้</th></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose up -d</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">เริ่ม services ทั้งหมด background</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ครั้งแรก / หลัง restart เครื่อง</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose down</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">หยุดและลบ container (volume ยังอยู่)</td><td style="padding:9px 14px;border:1px solid #E2E8F0">หยุดชั่วคราว</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose down -v</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">หยุดและลบ container + <u>ลบ volume ด้วย</u></td><td style="padding:9px 14px;border:1px solid #E2E8F0">⚠️ ข้อมูลหาย! reset ใหม่</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose stop</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">หยุด container (ไม่ลบ)</td><td style="padding:9px 14px;border:1px solid #E2E8F0">พักชั่วคราว</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose start</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">เริ่ม container ที่หยุดไว้</td><td style="padding:9px 14px;border:1px solid #E2E8F0">หลัง stop</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose restart</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">restart ทุก service</td><td style="padding:9px 14px;border:1px solid #E2E8F0">หลังแก้ config</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose ps</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">ดู status ทุก service</td><td style="padding:9px 14px;border:1px solid #E2E8F0">ตรวจสอบปกติ</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose logs -f n8n</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">ดู logs real-time</td><td style="padding:9px 14px;border:1px solid #E2E8F0">debug ปัญหา</td></tr><tr style="background:#F8FAFC"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose pull</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">ดาวน์โหลด image ใหม่</td><td style="padding:9px 14px;border:1px solid #E2E8F0">เตรียม update</td></tr><tr style="background:#fff"><td style="padding:9px 14px;border:1px solid #E2E8F0"><code>docker compose up -d --force-recreate</code></td><td style="padding:9px 14px;border:1px solid #E2E8F0">recreate container ด้วย image ใหม่</td><td style="padding:9px 14px;border:1px solid #E2E8F0">หลัง pull</td></tr></table></div><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">Update n8n เป็น version ใหม่</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9"># ขั้นตอน update n8n
+docker compose pull n8n
+docker compose up -d --force-recreate n8n
+
+# ตรวจสอบ
+docker compose ps
+# NAME               STATUS    PORTS
+# cpf-n8n-n8n-1      running   127.0.0.1:5678-&gt;5678/tcp
+
+✅ n8n updated — workflows/credentials ยังอยู่ครบ</div>
+</div></div></div><h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 7 — Backup และ Restore</h2><div class="step"><div class="step-header"><div class="step-num" style="background:#0891B2">7</div><div class="step-info"><div class="step-title">Backup Workflow + Credentials</div><div class="step-sub">ทำก่อน update ทุกครั้ง</div></div></div><div class="step-body"><div class="screen-box" style="margin-bottom:16px">
+  <div class="screen-head">
+    <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+    <span class="screen-lbl">Backup & Restore Commands</span>
+  </div>
+  <div class="screen-body" style="line-height:1.9"># ── Backup n8n_data → tar file ────────────────────────────
+docker run --rm \
+  -v cpf-n8n_n8n_data:/source:ro \
+  -v $(pwd)/backups:/backup \
+  alpine \
+  tar czf /backup/n8n-$(date +%Y%m%d).tar.gz -C /source .
+
+# ผล: backups/n8n-20260525.tar.gz
+
+# ── Restore ────────────────────────────────────────────────
+docker compose stop n8n
+
+docker run --rm \
+  -v cpf-n8n_n8n_data:/target \
+  -v $(pwd)/backups:/backup \
+  alpine \
+  tar xzf /backup/n8n-20260525.tar.gz -C /target
+
+docker compose start n8n
+
+# ── ดู volumes ─────────────────────────────────────────────
+docker volume ls
+docker system df
+docker volume inspect cpf-n8n_n8n_data</div>
+</div></div></div><h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 8 — Troubleshooting ปัญหาบ่อย</h2><div class="step"><div class="step-header"><div class="step-num" style="background:color:#0891B2">8</div><div class="step-info"><div class="step-title">วิธีแก้ปัญหาที่พบบ่อย</div><div class="step-sub"></div></div></div><div class="step-body"><div style="border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;margin-bottom:8px">
+    <div style="background:#FEF0EE;padding:9px 14px;font-size:13px;font-weight:600;color:#C0392B">❌ port is already allocated</div>
+    <div style="padding:10px 14px;font-size:13px;line-height:1.7">
+      <strong>สาเหตุ:</strong> Port 5678 ถูกโปรแกรมอื่นใช้อยู่<br><strong>แก้ไข:</strong> เปลี่ยน <code>- "5679:5678"</code> แล้วเข้า localhost:5679
+    </div></div><div style="border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;margin-bottom:8px">
+    <div style="background:#FEF0EE;padding:9px 14px;font-size:13px;font-weight:600;color:#C0392B">❌ Permission denied (Windows)</div>
+    <div style="padding:10px 14px;font-size:13px;line-height:1.7">
+      <strong>สาเหตุ:</strong> Docker Desktop ยังไม่ได้รับ permission<br><strong>แก้ไข:</strong> Settings → Resources → File Sharing → เพิ่ม drive ที่ใช้
+    </div></div><div style="border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;margin-bottom:8px">
+    <div style="background:#FEF0EE;padding:9px 14px;font-size:13px;font-weight:600;color:#C0392B">❌ Container keeps restarting</div>
+    <div style="padding:10px 14px;font-size:13px;line-height:1.7">
+      <strong>สาเหตุ:</strong> Environment variable ผิด หรือ DB ยังไม่พร้อม<br><strong>แก้ไข:</strong> <code>docker compose logs n8n</code> ดู error แล้วแก้
+    </div></div><div style="border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;margin-bottom:8px">
+    <div style="background:#FEF0EE;padding:9px 14px;font-size:13px;font-weight:600;color:#C0392B">❌ Schedule ไม่ทำงานตามเวลา</div>
+    <div style="padding:10px 14px;font-size:13px;line-height:1.7">
+      <strong>สาเหตุ:</strong> ไม่ได้ตั้ง timezone หรือ Workflow ไม่ได้ Active<br><strong>แก้ไข:</strong> ตรวจสอบ <code>GENERIC_TIMEZONE=Asia/Bangkok</code> และ toggle สีเขียว
+    </div></div><div style="border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;margin-bottom:8px">
+    <div style="background:#FEF0EE;padding:9px 14px;font-size:13px;font-weight:600;color:#C0392B">❌ Workflows หายหลัง restart</div>
+    <div style="padding:10px 14px;font-size:13px;line-height:1.7">
+      <strong>สาเหตุ:</strong> ไม่ได้ตั้ง Volume<br><strong>แก้ไข:</strong> เพิ่ม volumes section ใน compose แล้ว recreate
+    </div></div><div style="border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;margin-bottom:8px">
+    <div style="background:#FEF0EE;padding:9px 14px;font-size:13px;font-weight:600;color:#C0392B">❌ Cannot connect to db</div>
+    <div style="padding:10px 14px;font-size:13px;line-height:1.7">
+      <strong>สาเหตุ:</strong> Password ไม่ตรงกัน หรือ healthcheck ยังไม่ผ่าน<br><strong>แก้ไข:</strong> ตรวจ POSTGRES_PASSWORD = DB_POSTGRESDB_PASSWORD ต้องตรงกันทุกตัวอักษร
+    </div></div></div></div><h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 9 — ตั้งค่า Credentials</h2><div class="step"><div class="step-header"><div class="step-num" style="background:#0891B2">9</div><div class="step-info"><div class="step-title">เชื่อม API Keys ทุกตัว</div><div class="step-sub">Settings → Credentials → + Add credential</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span><strong>Google (Sheets, Gmail, Drive)</strong>: Type = Google OAuth2 API → เชื่อม Account</span></li><li><span class="n" style="background:#0D2137">2</span><span><strong>OpenAI</strong>: Type = OpenAI API → Key จาก platform.openai.com</span></li><li><span class="n" style="background:#0D2137">3</span><span><strong>Gemini</strong>: Type = Google Gemini API → Key จาก aistudio.google.com (ฟรี!)</span></li><li><span class="n" style="background:#0D2137">4</span><span><strong>Claude</strong>: Type = HTTP Header Auth → Name: <code>x-api-key</code> | Value: API Key</span></li><li><span class="n" style="background:#0D2137">5</span><span><strong>LINE Notify</strong>: Type = HTTP Header Auth → Name: <code>Authorization</code> | Value: <code>Bearer TOKEN</code></span></li></ul><div class="tip">💡 <span>Gemini API Key ฟรีไม่จำกัดสำหรับ Flash model — เหมาะมากสำหรับ n8n Local CPF</span></div></div></div><h2 class="section-title" style="margin-top:40px">ขั้นตอนที่ 10 — Workshop Workflows สำหรับ CPF</h2>
+<div class="tab-bar">
+  <button class="tab-btn on" data-group="wf" data-target="wa" onclick="showTab('wf','wa')">⏰ QC Alert</button>
+  <button class="tab-btn" data-group="wf" data-target="wb" onclick="showTab('wf','wb')">📧 Complaint</button>
+  <button class="tab-btn" data-group="wf" data-target="wc" onclick="showTab('wf','wc')">📦 Stock Monitor</button>
+  <button class="tab-btn" data-group="wf" data-target="wd" onclick="showTab('wf','wd')">📝 Daily Report</button>
+</div>
+
+<div id="wa" class="tab-content on" data-group="wf">
+<div class="wf-box"><div class="wf-title" style="background:ทุกวัน 17:00 → ดึงข้อมูล QC → Gemini วิเคราะห์ → แยก 3 ระดับ → แจ้งเตือน">⏰ QC Daily Alert — Schedule 17:00 + Gemini + LINE</div><div class="wf-body"><div class="wf-row"><div class="wf-node ">#</div></div><div class="wf-row"><div class="wf-node ">0</div></div><div class="wf-row"><div class="wf-node ">8</div></div><div class="wf-row"><div class="wf-node ">9</div></div><div class="wf-row"><div class="wf-node ">1</div></div><div class="wf-row"><div class="wf-node ">B</div></div><div class="wf-row"><div class="wf-node ">2</div></div><div style="font-size:12px;color:#5A6B7E;margin-top:8px;padding-top:8px;border-top:1px solid #E2E8F0">[[('⏰ Schedule\n17:00 จ-ศ', 'trigger'), ('📊 Google Sheets\nQC Data', 'data'), ('🤖 Gemini Flash\nวิเคราะห์', 'ai'), ('🔀 Switch\nSeverity', 'cond')], [('', ''), ('', ''), ('', ''), ('🔴 LINE CRITICAL / 🟡 LINE WARNING / ✅ Gmail', 'notify')]]</div></div></div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#2979C8">A</div><div class="step-info"><div class="step-title">ตั้งค่า Nodes</div><div class="step-sub"></div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span><strong>Schedule</strong>: Cron = <code>0 17 * * 1-5</code> | Timezone = Asia/Bangkok</span></li><li><span class="n" style="background:#0D2137">2</span><span><strong>Google Sheets</strong>: Get Rows | Filter วันที่ = วันนี้</span></li><li><span class="n" style="background:#0D2137">3</span><span><strong>Gemini Flash</strong>: ใส่ prompt วิเคราะห์ QC ตอบ JSON</span></li><li><span class="n" style="background:#0D2137">4</span><span><strong>Switch</strong>: Rule 1 = CRITICAL → LINE แดง | Rule 2 = WARNING → LINE เหลือง | Fallback = Gmail</span></li></ul></div></div>
+<div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Gemini Prompt — QC Analyzer</span><button class="copy-btn" onclick="copyPrompt('p5_qc',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p5_qc">วิเคราะห์ข้อมูล QC ต่อไปนี้:
+{{ JSON.stringify($input.all().map(i =&gt; i.json)) }}
+
+เกณฑ์: ความชื้น ≤ 12% | โปรตีน ≥ 22% (สุกร) / ≥ 38% (กุ้ง)
+
+ตอบ JSON เท่านั้น:
+{
+  "status": "CRITICAL|WARNING|OK",
+  "failed_lots": ["LOT001"],
+  "summary_th": "สรุปภาษาไทย 2 บรรทัด",
+  "action_th": "สิ่งต้องทำทันที"
+}</pre></div>
+</div>
+
+<div id="wb" class="tab-content" data-group="wf">
+<div class="wf-box"><div class="wf-title" style="background:ทุก Email complaint → Claude วิเคราะห์ → บันทึก Sheets → แจ้งถ้าเร่งด่วน">📧 Complaint Handler — Gmail → Claude → Sheets → LINE</div><div class="wf-body"><div class="wf-row"><div class="wf-node ">#</div></div><div class="wf-row"><div class="wf-node ">6</div></div><div class="wf-row"><div class="wf-node ">D</div></div><div class="wf-row"><div class="wf-node ">2</div></div><div class="wf-row"><div class="wf-node ">8</div></div><div class="wf-row"><div class="wf-node ">D</div></div><div class="wf-row"><div class="wf-node ">9</div></div><div style="font-size:12px;color:#5A6B7E;margin-top:8px;padding-top:8px;border-top:1px solid #E2E8F0">[[('📥 Gmail\nTrigger', 'trigger'), ('🤖 Claude API\nวิเคราะห์', 'ai'), ('📊 Sheets\nบันทึก', 'data'), ('🔀 IF Urgent', 'cond')], [('', ''), ('', ''), ('', ''), ('💬 LINE + 📧 Auto-Reply', 'notify')]]</div></div></div>
+<div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Claude Prompt — Complaint Analyzer</span><button class="copy-btn" onclick="copyPrompt('p5_complaint',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p5_complaint">{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 800,
+  "messages": [{
+    "role": "user",
+    "content": "วิเคราะห์ complaint:\nSubject: {{ $json.subject }}\nBody: {{ $json.text }}\n\nตอบ JSON:\n{"type":"quality|delivery|price","severity":"urgent|medium|low","key_issue":"ปัญหาหลัก","reply_th":"ร่างตอบกลับ"}"
+  }]
+}</pre></div>
+</div>
+
+<div id="wc" class="tab-content" data-group="wf">
+<div class="wf-box"><div class="wf-title" style="background:ตรวจสต็อกทุก 4 ชั่วโมง → Code คำนวณ ratio → ถ้าต่ำแจ้ง LINE">📦 Stock Monitor — ทุก 4 ชั่วโมง + Code Node</div><div class="wf-body"><div class="wf-row"><div class="wf-node ">#</div></div><div class="wf-row"><div class="wf-node ">0</div></div><div class="wf-row"><div class="wf-node ">F</div></div><div class="wf-row"><div class="wf-node ">7</div></div><div class="wf-row"><div class="wf-node ">6</div></div><div class="wf-row"><div class="wf-node ">6</div></div><div class="wf-row"><div class="wf-node ">E</div></div><div style="font-size:12px;color:#5A6B7E;margin-top:8px;padding-top:8px;border-top:1px solid #E2E8F0">[[('⏰ Cron\nทุก 4 ชม.', 'trigger'), ('📊 Sheets\nStock', 'data'), ('⚙️ Code Node\nคำนวณ', 'cond'), ('💬 LINE\nแจ้งเตือน', 'notify')]]</div></div></div>
+<div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Code Node — คำนวณ Stock Alert</span><button class="copy-btn" onclick="copyPrompt('p5_stock_code',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p5_stock_code">const items = $input.all();
+const alerts = [];
+for (const item of items) {
+  const cur = parseFloat(item.json['สต็อกปัจจุบัน (ตัน)']) || 0;
+  const min = parseFloat(item.json['ปริมาณขั้นต่ำ (ตัน)']) || 0;
+  if (cur &lt; min) {
+    alerts.push({ json: {
+      material: item.json['ชื่อวัตถุดิบ'],
+      current: cur, minimum: min,
+      level: cur &lt; min * 0.5 ? 'CRITICAL' : 'WARNING',
+      should_order: Math.round(min * 1.5 - cur)
+    }});
+  }
+}
+return alerts.length &gt; 0 ? alerts : [{json:{level:'OK'}}];</pre></div>
+</div>
+
+<div id="wd" class="tab-content" data-group="wf">
+<div class="wf-box"><div class="wf-title" style="background:ทุกเช้า 08:00 รวม QC + Complaint เมื่อวาน → Claude สร้าง Executive Summary → Email ผู้จัดการ">📝 Daily Report — ทุกเช้า 08:00 → Claude → Gmail</div><div class="wf-body"><div class="wf-row"><div class="wf-node ">#</div></div><div class="wf-row"><div class="wf-node ">D</div></div><div class="wf-row"><div class="wf-node ">3</div></div><div class="wf-row"><div class="wf-node ">5</div></div><div class="wf-row"><div class="wf-node ">4</div></div><div class="wf-row"><div class="wf-node ">0</div></div><div class="wf-row"><div class="wf-node ">0</div></div><div style="font-size:12px;color:#5A6B7E;margin-top:8px;padding-top:8px;border-top:1px solid #E2E8F0">[[('⏰ Cron 08:00', 'trigger'), ('📊 Sheets QC', 'data'), ('📊 Sheets Complaint', 'data'), ('🔗 Merge', 'cond'), ('🤖 Claude', 'ai'), ('📧 Gmail', 'action')]]</div></div></div>
+<div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Claude Prompt — Daily Executive Summary</span><button class="copy-btn" onclick="copyPrompt('p5_daily',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p5_daily">สร้าง Daily Report สำหรับผู้จัดการ CPF
+วันที่: {{ $now.minus({days:1}).toFormat('dd/MM/yyyy') }}
+
+QC Data: {{ JSON.stringify($('QC Sheets').all().map(i=&gt;i.json)) }}
+Complaints: {{ JSON.stringify($('Complaint Sheets').all().map(i=&gt;i.json)) }}
+
+รูปแบบ:
+📊 QC: ผ่าน X/Y LOT | ปัญหา: ...
+📧 Complaints: X รายการ (เร่งด่วน X)
+⚡ Top 3 ประเด็นติดตาม
+📋 Action Items วันนี้
+
+ภาษาไทย กระชับ เหมาะผู้บริหาร</pre></div>
+</div>
+
+  <div class="nav-footer"><a href="module4b.html" class="nav-btn">← Module 04B: n8n Cloud</a><a href="module-multiagent.html" class="nav-btn primary">Module 05B: Multi-Agent →</a></div>
+</main>
+
+<script>
+function copyPrompt(id,btn){
+  var t=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(function(){
+    var o=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';
+    btn.style.background='#1B7A3E';btn.style.color='#fff';
+    setTimeout(function(){btn.textContent=o;btn.style.background='';btn.style.color='';},2000);
+  }).catch(function(){btn.textContent='(เลือกด้วยมือ)';});
+}
+var path=window.location.pathname.split('/').pop();
+document.querySelectorAll('.sidebar a').forEach(function(a){
+  if(a.getAttribute('href')===path)a.classList.add('active');
+});
+function showTab(group,id){
+  document.querySelectorAll('.tab-content[data-group="'+group+'"]').forEach(function(el){el.classList.remove('on');});
+  document.querySelectorAll('.tab-btn[data-group="'+group+'"]').forEach(function(el){el.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+  document.querySelector('.tab-btn[data-target="'+id+'"]').classList.add('on');
+}
+</script>
+
+</body>
+</html>

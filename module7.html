@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Capstone — สร้าง AI Agent ประจำแผนก — CPF AI Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --navy:#0D2137;--blue:#1A4A7A;--sky:#2979C8;
+  --accent:#E85D04;--acl:#FFF3EC;
+  --green:#1B7A3E;--gcl:#EDFAF2;
+  --red:#C0392B;--rcl:#FEF0EE;
+  --amber:#B45309;--acl2:#FFFBEB;
+  --gray50:#F8FAFC;--gray100:#F1F5F9;
+  --gray200:#E2E8F0;--gray400:#94A3B8;
+  --gray600:#475569;--gray800:#1E293B;
+  --text:#1A2332;--muted:#5A6B7E;
+  --sidebar:220px;--font:'Sarabun',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--text);background:#fff;
+     display:flex;min-height:100vh;font-size:15px;line-height:1.7}
+
+/* ── Sidebar ── */
+.sidebar{width:var(--sidebar);background:var(--navy);
+  position:fixed;top:0;left:0;height:100vh;overflow-y:auto;
+  flex-shrink:0;z-index:100}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo .brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.sidebar-section{padding:10px 0 4px 18px;font-size:10px;color:rgba(255,255,255,.35);
+  text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:8px 18px;
+  font-size:13px;color:rgba(255,255,255,.65);text-decoration:none;
+  border-left:3px solid transparent;transition:all .15s}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sidebar a.active{color:#fff;background:rgba(41,121,200,.25);border-left-color:var(--sky)}
+.sidebar a .mn{font-size:11px;background:rgba(255,255,255,.12);
+  border-radius:4px;padding:1px 6px;font-family:var(--mono)}
+
+/* ── Main Content ── */
+.main{margin-left:var(--sidebar);flex:1;max-width:800px;padding:40px 48px 80px}
+.page-header{border-bottom:2px solid var(--navy);padding-bottom:20px;margin-bottom:36px}
+.module-num{font-size:11px;font-weight:600;color:var(--sky);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:6px}
+.page-title{font-size:30px;font-weight:700;color:var(--navy);line-height:1.2}
+.page-desc{font-size:15px;color:var(--muted);margin-top:8px;line-height:1.6}
+.meta-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+  border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--gray200)}
+
+/* ── Steps ── */
+.section-title{font-size:18px;font-weight:700;color:var(--navy);
+  margin:36px 0 18px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gray200)}
+.step{background:#fff;border:1px solid var(--gray200);border-radius:12px;
+  margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.step:hover{border-color:var(--sky)}
+.step-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--sky);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.step-info{flex:1}
+.step-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.step-sub{font-size:13px;color:var(--muted)}
+.step-body{padding:0 20px 18px 66px}
+
+/* ── Instruction list ── */
+.inst-list{background:var(--gray50);border-radius:8px;padding:14px 16px;
+  list-style:none;margin-bottom:14px}
+.inst-list li{display:flex;gap:10px;padding:5px 0;font-size:13px;
+  border-bottom:1px solid var(--gray200)}
+.inst-list li:last-child{border-bottom:none;padding-bottom:0}
+.inst-list li .n{min-width:20px;height:20px;border-radius:50%;
+  background:var(--navy);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* ── Prompt / Code boxes ── */
+.prompt-box{border:1px solid #C7D9F5;border-radius:10px;background:#F0F6FF;
+  margin-bottom:14px;overflow:hidden}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:#E3EEFF;border-bottom:1px solid #C7D9F5}
+.prompt-label{font-size:10px;font-weight:700;color:var(--sky);
+  text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;
+  border:1px solid #A0BBE8;background:#fff;color:var(--sky);font-weight:500;
+  font-family:var(--font)}
+.copy-btn:hover{background:var(--sky);color:#fff}
+.prompt-body{padding:14px 16px;font-size:13px;line-height:1.8;
+  white-space:pre-wrap;font-family:var(--mono);color:var(--gray800)}
+
+.screen-box{background:#0D1117;border-radius:10px;margin-bottom:14px;overflow:hidden}
+.screen-head{background:#21262D;padding:8px 14px;display:flex;
+  align-items:center;gap:6px}
+.dot-r{width:10px;height:10px;border-radius:50%;background:#FF5F57}
+.dot-y{width:10px;height:10px;border-radius:50%;background:#FFBD2E}
+.dot-g{width:10px;height:10px;border-radius:50%;background:#28CA41}
+.screen-lbl{font-size:11px;color:#8B949E;margin-left:6px;font-family:var(--mono)}
+.screen-body{padding:16px 18px;font-size:12px;color:#C9D1D9;
+  font-family:var(--mono);line-height:1.8;white-space:pre}
+
+/* ── Callout boxes ── */
+.tip{background:var(--acl2);border-left:4px solid var(--accent);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--amber);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.tip svg,.note svg,.warn svg{flex-shrink:0;margin-top:1px}
+.note{background:var(--gcl);border-left:4px solid var(--green);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--green);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.warn{background:var(--rcl);border-left:4px solid var(--red);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--red);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.info-box{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px}
+.info-box h4{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px}
+
+/* ── Chat demo ── */
+.chat-demo{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px;margin-bottom:14px}
+.chat-u{background:var(--sky);color:#fff;border-radius:12px 12px 3px 12px;
+  padding:8px 12px;font-size:13px;max-width:70%;margin-left:auto;
+  margin-bottom:8px;line-height:1.6}
+.chat-ai{background:#fff;border:1px solid var(--gray200);
+  border-radius:12px 12px 12px 3px;padding:8px 12px;font-size:13px;
+  max-width:82%;margin-bottom:8px;line-height:1.6}
+.chat-name{font-size:10px;color:var(--gray400);margin-bottom:3px}
+
+/* ── Output ── */
+.output-box{border-left:3px solid var(--green);border-radius:0 8px 8px 0;
+  background:var(--gcl);padding:14px 16px;margin-bottom:14px}
+.output-label{font-size:10px;font-weight:700;color:var(--green);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.output-body{font-size:13px;line-height:1.8;white-space:pre-wrap;
+  color:var(--gray800);font-family:var(--mono)}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{width:100%;height:auto;position:relative}
+  .main{margin-left:0;padding:24px 20px 60px}
+  body{flex-direction:column}
+}
+
+/* ── Nav footer ── */
+.nav-footer{display:flex;justify-content:space-between;
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--gray200)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+  border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;
+  border:1px solid var(--gray200);color:var(--navy);transition:all .15s}
+.nav-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav-btn.primary{background:var(--sky);color:#fff;border-color:var(--sky)}
+.nav-btn.primary:hover{background:var(--navy)}
+
+/* ── Copy JS ── */
+</style>
+</head>
+<body>
+<nav class="sidebar"><div class="sidebar-logo"><div class="brand">🐔 CPF AI Workshop</div><div class="sub">คู่มือประกอบการสอน 2569</div></div><div class="sidebar-section">Modules</div><a href="index.html"><span class="mn">🏠</span>ภาพรวม Workshop</a><a href="module1.html"><span class="mn">01</span>AI Agent คืออะไร + MCP</a><a href="module2.html"><span class="mn">02</span>Claude.ai — เริ่มต้น</a><a href="module3.html"><span class="mn">03</span>Workshop Labs</a><a href="module4.html"><span class="mn">04</span>Dify — Chatbot Builder</a><a href="module4b.html"><span class="mn">04B</span>n8n Cloud + LLM</a><a href="module5.html"><span class="mn">05</span>n8n — Local Install</a><a href="module-multiagent.html"><span class="mn">05B</span>Multi-Agent Workflows</a><a href="module-stitch.html"><span class="mn">05C</span>Stitch + Antigravity 🆕</a><a href="module-claudecode.html"><span class="mn">05D</span>Claude Code</a><a href="module-claudecode-project.html"><span class="mn">05E</span>Full Stack Project 🆕</a><a href="module6.html"><span class="mn">06</span>MCP Protocol</a><a href="module7.html"><span class="mn">07</span>Capstone Project</a></nav>
+<main class="main">
+  <header class="page-header">
+    <div class="module-num">Module 07 · 60 นาที</div>
+    <h1 class="page-title">Capstone — สร้าง AI Agent ประจำแผนก</h1>
+    <p class="page-desc">ลงมือสร้าง AI Agent จริงสำหรับแผนกของตัวเอง และนำเสนอต่อกลุ่ม</p>
+    <div class="meta-pills"><span class="pill" style="background:#E85D04;border-color:#E85D0420;color:#E85D04cc">กลุ่ม 5 แผนก</span><span class="pill" style="background:#1B7A3E;border-color:#1B7A3E20;color:#1B7A3Ecc">Hands-on</span><span class="pill" style="background:#5A6B7E;border-color:#5A6B7E20;color:#5A6B7Ecc">60 นาที</span></div>
+  </header>
+  <h2 class="section-title">Capstone Project — สร้าง AI Agent ประจำแผนก</h2>
+<div class="info-box" style="margin-bottom:20px">
+<h4>📋 ขั้นตอนการทำ Capstone</h4>
+<div style="font-size:13px;color:#5A6B7E;line-height:1.8">
+  ⏰ เวลา: 60 นาที (ทำงานเป็นกลุ่ม 3-4 คน)<br>
+  🎯 เป้าหมาย: สร้าง AI Agent จริงที่ใช้งานได้หลัง Workshop<br>
+  🏆 Showcase: นำเสนอ 5 นาทีต่อกลุ่ม
+</div>
+</div>
+<div style="border:1px solid #E2E8F0;border-radius:12px;padding:18px;
+      border-top:4px solid #1A4A7A;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:22px">🏭</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#0D2137">กลุ่ม 1: แผนกผลิต</div>
+          <div style="font-size:12px;color:#5A6B7E">Production Shift Report Bot</div>
+        </div>
+      </div>
+      <ul style="list-style:none;padding:0;margin-bottom:10px"><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ สร้าง Claude Project อัปโหลด SOP + มาตรฐานการผลิต</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ สร้าง Dify Chatbot: ตอบปัญหา Machine troubleshoot</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ สร้าง n8n Workflow: สรุปรายงาน Shift ส่ง LINE Manager 17:00</li></ul>
+      <div style="background:#1A4A7A15;border-radius:6px;padding:8px 10px;
+        font-size:12px;color:#1A4A7A;font-weight:500">🎯 CPF Shift Assistant — ตอบปัญหาสายการผลิตและสรุปรายงานอัตโนมัติ</div>
+    </div><div style="border:1px solid #E2E8F0;border-radius:12px;padding:18px;
+      border-top:4px solid #1B7A3E;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:22px">🔬</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#0D2137">กลุ่ม 2: แผนก QC</div>
+          <div style="font-size:12px;color:#5A6B7E">QC Alert + Root Cause Analyzer</div>
+        </div>
+      </div>
+      <ul style="list-style:none;padding:0;margin-bottom:10px"><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ Claude Project: มาตรฐาน QC ทุกผลิตภัณฑ์</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ n8n: Sheets → Claude วิเคราะห์ → LINE แจ้งด่วน</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ Claude: วิเคราะห์ root cause เมื่อพบ Lot ไม่ผ่าน</li></ul>
+      <div style="background:#1B7A3E15;border-radius:6px;padding:8px 10px;
+        font-size:12px;color:#1B7A3E;font-weight:500">🎯 CPF QC Agent — ตรวจสอบอัตโนมัติและแจ้งเตือน 17:00 ทุกวัน</div>
+    </div><div style="border:1px solid #E2E8F0;border-radius:12px;padding:18px;
+      border-top:4px solid #7C3AED;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:22px">👥</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#0D2137">กลุ่ม 3: แผนก HR</div>
+          <div style="font-size:12px;color:#5A6B7E">HR Policy Chatbot</div>
+        </div>
+      </div>
+      <ul style="list-style:none;padding:0;margin-bottom:10px"><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ Dify: Knowledge Base = HR Policy ทั้งหมด</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ ตั้งค่า System Prompt 'น้องซีพี'</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ Publish เป็น Web App + QR Code ติดบอร์ดประกาศ</li></ul>
+      <div style="background:#7C3AED15;border-radius:6px;padding:8px 10px;
+        font-size:12px;color:#7C3AED;font-weight:500">🎯 น้องซีพี — ตอบคำถาม HR 24/7 สำหรับพนักงานโรงงาน</div>
+    </div><div style="border:1px solid #E2E8F0;border-radius:12px;padding:18px;
+      border-top:4px solid #0891B2;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:22px">📦</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#0D2137">กลุ่ม 4: Procurement</div>
+          <div style="font-size:12px;color:#5A6B7E">Stock Alert + PO Draft</div>
+        </div>
+      </div>
+      <ul style="list-style:none;padding:0;margin-bottom:10px"><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ n8n: ตรวจสต็อก Sheets ทุก 6 ชั่วโมง → แจ้ง LINE</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ Claude: ร่าง Purchase Order เมื่อสต็อกต่ำ</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ Dify: ตอบคำถาม Supplier และสินค้า</li></ul>
+      <div style="background:#0891B215;border-radius:6px;padding:8px 10px;
+        font-size:12px;color:#0891B2;font-weight:500">🎯 CPF Stock Agent — แจ้งเตือนและร่าง PO อัตโนมัติ</div>
+    </div><div style="border:1px solid #E2E8F0;border-radius:12px;padding:18px;
+      border-top:4px solid #E85D04;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:22px">🛒</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#0D2137">กลุ่ม 5: Sales/CS</div>
+          <div style="font-size:12px;color:#5A6B7E">Customer Complaint Handler</div>
+        </div>
+      </div>
+      <ul style="list-style:none;padding:0;margin-bottom:10px"><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ Make/n8n: รับ Email → Claude วิเคราะห์ → บันทึก Sheets</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ Dify: Product Catalog Chatbot สำหรับทีมขาย</li><li style='margin-bottom:4px;font-size:12px;color:#5A6B7E'>✅ Claude: ร่าง Email ตอบ Complaint อัตโนมัติ</li></ul>
+      <div style="background:#E85D0415;border-radius:6px;padding:8px 10px;
+        font-size:12px;color:#E85D04;font-weight:500">🎯 CPF CS Agent — จัดการ Complaint อัตโนมัติและ Chatbot ผลิตภัณฑ์</div>
+    </div><h2 class="section-title">แนวทางการนำเสนอ (Showcase)</h2><div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#2979C8">📊</div>
+    <div class="step-info">
+      <div class="step-title">โครงสร้างการนำเสนอ 5 นาที</div>
+      <div class="step-sub"></div>
+    </div>
+  </div>
+  <div class="step-body"><ul class="inst-list"><li><span class="n">1</span><span><strong>นาทีที่ 1:</strong> ปัญหาที่แผนกเจอ (ก่อนมี AI)</span></li><li><span class="n">2</span><span><strong>นาทีที่ 2-3:</strong> Demo AI Agent ที่สร้าง</span></li><li><span class="n">3</span><span><strong>นาทีที่ 4:</strong> ผลลัพธ์ที่คาดหวัง (ประหยัดเวลา/ลดข้อผิดพลาด)</span></li><li><span class="n">4</span><span><strong>นาทีที่ 5:</strong> แผนต่อยอดหลัง Workshop</span></li></ul></div>
+</div><h2 class="section-title">Checklist ก่อนส่งงาน</h2>
+<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:16px;font-size:13px">
+  <div style="font-weight:600;color:#0D2137;margin-bottom:12px">✅ สิ่งที่กลุ่มต้องส่งมอบ</div>
+  <div style="display:grid;gap:8px">
+    <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox"> Claude Project พร้อมเอกสารของแผนก</label>
+    <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox"> Chatbot หรือ Workflow ที่ทำงานได้จริง (Demo)</label>
+    <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox"> System Prompt ที่เขียนเอง</label>
+    <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox"> ทดสอบอย่างน้อย 10 คำถาม/กรณี</label>
+    <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox"> แผนนำไปใช้จริงในแผนก</label>
+  </div>
+</div>
+<h2 class="section-title">ก้าวต่อไปหลัง Workshop</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:13px">
+  <div style="background:#F0F6FF;padding:12px;border-radius:10px;border-top:3px solid #1A4A7A">
+    <div style="font-weight:600;color:#1A4A7A;margin-bottom:6px">สัปดาห์ที่ 1</div>
+    <div style="color:#5A6B7E;line-height:1.7">
+      ✅ ใช้ Claude ในงานประจำวัน<br>
+      ✅ สร้าง Project ของแผนก<br>
+      ✅ แชร์ให้เพื่อนร่วมงาน
+    </div>
+  </div>
+  <div style="background:#EDFAF2;padding:12px;border-radius:10px;border-top:3px solid #1B7A3E">
+    <div style="font-weight:600;color:#1B7A3E;margin-bottom:6px">เดือนที่ 1</div>
+    <div style="color:#5A6B7E;line-height:1.7">
+      ✅ Deploy Dify Chatbot<br>
+      ✅ สร้าง n8n Workflow<br>
+      ✅ วัดผล: ประหยัดเวลากี่ชั่วโมง
+    </div>
+  </div>
+  <div style="background:#FFFBEB;padding:12px;border-radius:10px;border-top:3px solid #B45309">
+    <div style="font-weight:600;color:#B45309;margin-bottom:6px">เดือนที่ 3</div>
+    <div style="color:#5A6B7E;line-height:1.7">
+      ✅ MCP Integration<br>
+      ✅ Multi-agent Workflow<br>
+      ✅ นำเสนอ ROI ให้ผู้บริหาร
+    </div>
+  </div>
+</div>
+
+  <div class="nav-footer"><a href="module6.html" class="nav-btn">← Module 06</a><a href="index.html" class="nav-btn primary">กลับหน้าหลัก →</a></div>
+</main>
+
+<script>
+function copyPrompt(id,btn){
+  var t=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(function(){
+    var o=btn.textContent;
+    btn.textContent='✓ คัดลอกแล้ว';
+    btn.style.background='#1B7A3E';btn.style.color='#fff';
+    setTimeout(function(){btn.textContent=o;btn.style.background='';btn.style.color='';},2000);
+  }).catch(function(){btn.textContent='(เลือกข้อความด้วยมือ)';});
+}
+// Sidebar active
+var path=window.location.pathname.split('/').pop();
+document.querySelectorAll('.sidebar a').forEach(function(a){
+  if(a.getAttribute('href')===path){a.classList.add('active');}
+});
+</script>
+
+</body>
+</html>

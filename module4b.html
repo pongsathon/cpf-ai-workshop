@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>n8n Cloud + LLM Workflows — CPF AI Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --navy:#0D2137;--blue:#1A4A7A;--sky:#2979C8;
+  --accent:#E85D04;--acl:#FFF3EC;
+  --green:#1B7A3E;--gcl:#EDFAF2;
+  --red:#C0392B;--rcl:#FEF0EE;
+  --amber:#B45309;--acl2:#FFFBEB;
+  --orange:#D35400;--ocl:#FEF3EC;
+  --purple:#6D28D9;--pcl:#F5F3FF;
+  --teal:#0F766E;--tcl:#F0FDFA;
+  --gray50:#F8FAFC;--gray100:#F1F5F9;--gray200:#E2E8F0;
+  --gray400:#94A3B8;--gray600:#475569;--gray800:#1E293B;
+  --text:#1A2332;--muted:#5A6B7E;--sidebar:220px;
+  --font:'Sarabun',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--text);background:#fff;
+     display:flex;min-height:100vh;font-size:15px;line-height:1.7}
+.sidebar{width:var(--sidebar);background:var(--navy);position:fixed;
+  top:0;left:0;height:100vh;overflow-y:auto;flex-shrink:0;z-index:100}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo .brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.sidebar-section{padding:10px 0 4px 18px;font-size:10px;color:rgba(255,255,255,.35);
+  text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:8px 18px;
+  font-size:13px;color:rgba(255,255,255,.65);text-decoration:none;
+  border-left:3px solid transparent;transition:all .15s}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sidebar a.active{color:#fff;background:rgba(41,121,200,.25);border-left-color:var(--sky)}
+.sidebar a .mn{font-size:10px;background:rgba(255,255,255,.12);
+  border-radius:4px;padding:1px 6px;font-family:var(--mono)}
+.main{margin-left:var(--sidebar);flex:1;max-width:820px;padding:40px 48px 80px}
+.page-header{border-bottom:2px solid var(--navy);padding-bottom:20px;margin-bottom:36px}
+.module-num{font-size:11px;font-weight:600;color:var(--sky);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:6px}
+.page-title{font-size:30px;font-weight:700;color:var(--navy);line-height:1.2}
+.page-desc{font-size:15px;color:var(--muted);margin-top:8px;line-height:1.6}
+.meta-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+  border-radius:20px;font-size:12px;font-weight:500;border:1px solid}
+.section-title{font-size:18px;font-weight:700;color:var(--navy);
+  margin:36px 0 18px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gray200)}
+.step{background:#fff;border:1px solid var(--gray200);border-radius:12px;
+  margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.step:hover{border-color:var(--sky)}
+.step-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--sky);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.step-info{flex:1}
+.step-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.step-sub{font-size:13px;color:var(--muted)}
+.step-body{padding:0 20px 18px 66px}
+.inst-list{background:var(--gray50);border-radius:8px;padding:14px 16px;
+  list-style:none;margin-bottom:14px}
+.inst-list li{display:flex;gap:10px;padding:5px 0;font-size:13px;
+  border-bottom:1px solid var(--gray200)}
+.inst-list li:last-child{border-bottom:none;padding-bottom:0}
+.inst-list li .n{min-width:20px;height:20px;border-radius:50%;
+  background:var(--navy);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.prompt-box{border:1px solid #C7D9F5;border-radius:10px;background:#F0F6FF;
+  margin-bottom:14px;overflow:hidden}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:#E3EEFF;border-bottom:1px solid #C7D9F5}
+.prompt-label{font-size:10px;font-weight:700;color:var(--sky);
+  text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;
+  border:1px solid #A0BBE8;background:#fff;color:var(--sky);font-weight:500;
+  font-family:var(--font)}
+.copy-btn:hover{background:var(--sky);color:#fff}
+.prompt-body{padding:14px 16px;font-size:12px;line-height:1.8;
+  white-space:pre-wrap;font-family:var(--mono);color:var(--gray800)}
+.screen-box{background:#0D1117;border-radius:10px;margin-bottom:14px;overflow:hidden}
+.screen-head{background:#21262D;padding:8px 14px;display:flex;align-items:center;gap:6px}
+.dot-r{width:10px;height:10px;border-radius:50%;background:#FF5F57}
+.dot-y{width:10px;height:10px;border-radius:50%;background:#FFBD2E}
+.dot-g{width:10px;height:10px;border-radius:50%;background:#28CA41}
+.screen-lbl{font-size:11px;color:#8B949E;margin-left:6px;font-family:var(--mono)}
+.screen-body{padding:16px 18px;font-size:12px;color:#C9D1D9;
+  font-family:var(--mono);line-height:1.8;white-space:pre}
+.tip{background:var(--acl2);border-left:4px solid var(--accent);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--amber);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.note{background:var(--gcl);border-left:4px solid var(--green);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--green);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.warn{background:var(--rcl);border-left:4px solid var(--red);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--red);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.info-box{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px}
+.info-box h4{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px}
+.output-box{border-left:3px solid var(--green);border-radius:0 8px 8px 0;
+  background:var(--gcl);padding:14px 16px;margin-bottom:14px}
+.output-label{font-size:10px;font-weight:700;color:var(--green);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.output-body{font-size:12px;line-height:1.8;white-space:pre-wrap;
+  color:var(--gray800);font-family:var(--mono)}
+.chat-demo{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px;margin-bottom:14px}
+.chat-u{background:var(--sky);color:#fff;border-radius:12px 12px 3px 12px;
+  padding:8px 12px;font-size:13px;max-width:70%;margin-left:auto;
+  margin-bottom:8px;line-height:1.6}
+.chat-ai{background:#fff;border:1px solid var(--gray200);
+  border-radius:12px 12px 12px 3px;padding:8px 12px;font-size:13px;
+  max-width:85%;margin-bottom:8px;line-height:1.6}
+.chat-name{font-size:10px;color:var(--gray400);margin-bottom:3px}
+.badge{display:inline-block;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600}
+.wf-box{border:1px solid var(--gray200);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.wf-title{background:var(--navy);color:#fff;padding:10px 16px;
+  font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.wf-body{padding:14px 16px}
+.wf-row{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-bottom:6px}
+.wf-node{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:8px;padding:6px 12px;font-size:12px;text-align:center;min-width:120px}
+.wf-arrow{color:var(--gray400);font-size:18px;padding:0 6px;flex-shrink:0}
+.wf-node.trigger{background:#E3EEFF;border-color:#A0BBE8;color:var(--blue)}
+.wf-node.ai{background:#F5F3FF;border-color:#C4B5FD;color:var(--purple)}
+.wf-node.action{background:#EDFAF2;border-color:#86EFAC;color:var(--green)}
+.wf-node.cond{background:#FFFBEB;border-color:#FCD34D;color:var(--amber)}
+.wf-node.data{background:#F0FDFA;border-color:#5EEAD4;color:var(--teal)}
+.wf-node.notify{background:#FFF3EC;border-color:#FCA85E;color:var(--orange)}
+@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative}
+  .main{margin-left:0;padding:24px 20px 60px}body{flex-direction:column}}
+.nav-footer{display:flex;justify-content:space-between;
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--gray200)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+  border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;
+  border:1px solid var(--gray200);color:var(--navy);transition:all .15s}
+.nav-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav-btn.primary{background:var(--sky);color:#fff;border-color:var(--sky)}
+.nav-btn.primary:hover{background:var(--navy)}
+.llm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.llm-card{border:1px solid var(--gray200);border-radius:10px;padding:14px;text-align:center}
+.llm-logo{font-size:28px;margin-bottom:6px}
+.llm-name{font-size:13px;font-weight:600;color:var(--navy)}
+.llm-note{font-size:11px;color:var(--muted);margin-top:2px}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--gray200);padding-bottom:-2px}
+.tab-btn{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;
+  border:none;background:none;color:var(--muted);border-bottom:2px solid transparent;
+  margin-bottom:-2px;font-family:var(--font);transition:all .15s}
+.tab-btn.on{color:var(--sky);border-bottom-color:var(--sky)}
+.tab-content{display:none}.tab-content.on{display:block}
+</style>
+</head>
+<body>
+<nav class="sidebar"><div class="sidebar-logo"><div class="brand">🐔 CPF AI Workshop</div><div class="sub">คู่มือประกอบการสอน 2569</div></div><div class="sidebar-section">Modules</div><a href="index.html"><span class="mn">🏠</span>ภาพรวม Workshop</a><a href="module1.html"><span class="mn">01</span>AI Agent คืออะไร + MCP</a><a href="module2.html"><span class="mn">02</span>Claude.ai — เริ่มต้น</a><a href="module3.html"><span class="mn">03</span>Workshop Labs</a><a href="module4.html"><span class="mn">04</span>Dify — Chatbot Builder</a><a href="module4b.html"><span class="mn">04B</span>n8n Cloud + LLM</a><a href="module5.html"><span class="mn">05</span>n8n — Local Install</a><a href="module-multiagent.html"><span class="mn">05B</span>Multi-Agent Workflows</a><a href="module-stitch.html"><span class="mn">05C</span>Stitch + Antigravity 🆕</a><a href="module-claudecode.html"><span class="mn">05D</span>Claude Code</a><a href="module-claudecode-project.html"><span class="mn">05E</span>Full Stack Project 🆕</a><a href="module6.html"><span class="mn">06</span>MCP Protocol</a><a href="module7.html"><span class="mn">07</span>Capstone Project</a></nav>
+<main class="main">
+  <header class="page-header" style="border-bottom-color:#412991">
+    <div class="module-num" style="color:#412991">Module 04B · 60 นาที</div>
+    <h1 class="page-title">n8n Cloud + LLM Workflows</h1>
+    <p class="page-desc">สร้าง Automation Workflows บน n8n Cloud และเชื่อมต่อ AI: OpenAI, Gemini, Claude พร้อม Alert และ Schedule</p>
+    <div class="meta-pills"><span class="pill" style="background:#41299115;border-color:#41299140;color:#412991">n8n Cloud</span><span class="pill" style="background:#10a37f15;border-color:#10a37f40;color:#10a37f">OpenAI</span><span class="pill" style="background:#1A73E815;border-color:#1A73E840;color:#1A73E8">Gemini</span><span class="pill" style="background:#D9770615;border-color:#D9770640;color:#D97706">Claude</span><span class="pill" style="background:#5A6B7E15;border-color:#5A6B7E40;color:#5A6B7E">60 นาที</span></div>
+  </header>
+  <h2 class="section-title">n8n Cloud คืออะไร?</h2>
+<div class="info-box">
+<h4>☁️ n8n Cloud — Automation ไม่ต้องติดตั้ง</h4>
+<p style="font-size:13px;line-height:1.7;margin-bottom:12px">
+n8n Cloud คือ hosted version ของ n8n ที่ Microsoft/n8n ดูแล infrastructure ให้ทั้งหมด
+ไม่ต้องติดตั้ง Docker ไม่ต้องดูแล server เปิดเบราว์เซอร์แล้วสร้าง Workflow ได้เลย
+</p>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px">
+  <div style="background:#E3EEFF;padding:10px;border-radius:8px;text-align:center">
+    <div style="font-size:18px;margin-bottom:4px">⚡</div>
+    <strong>เริ่มได้ใน 2 นาที</strong><br>ไม่ต้องติดตั้ง
+  </div>
+  <div style="background:#EDFAF2;padding:10px;border-radius:8px;text-align:center">
+    <div style="font-size:18px;margin-bottom:4px">🔗</div>
+    <strong>400+ Integrations</strong><br>LINE, Gmail, Sheets
+  </div>
+  <div style="background:#F5F3FF;padding:10px;border-radius:8px;text-align:center">
+    <div style="font-size:18px;margin-bottom:4px">🤖</div>
+    <strong>AI Nodes built-in</strong><br>OpenAI, Gemini, Claude
+  </div>
+</div>
+</div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#2979C8">1</div><div class="step-info"><div class="step-title">สมัครและเริ่มใช้ n8n Cloud</div><div class="step-sub">ฟรี 14 วัน ไม่ต้องบัตรเครดิต</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>เปิด <strong>n8n.io</strong> กด <strong>Get started free</strong></span></li><li><span class="n" style="background:#0D2137">2</span><span>สมัครด้วย Email หรือ Google Account</span></li><li><span class="n" style="background:#0D2137">3</span><span>เลือก plan: <strong>Free Trial</strong> (14 วัน) หรือ Starter $20/เดือน</span></li><li><span class="n" style="background:#0D2137">4</span><span>ตั้งชื่อ Workspace: <code>CPF-Automation</code></span></li><li><span class="n" style="background:#0D2137">5</span><span>✅ เข้า n8n Cloud Dashboard พร้อมสร้าง Workflow</span></li></ul><div class="screen-box"><div class="screen-head"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="screen-lbl">n8n.io — Cloud Dashboard</span></div><div class="screen-body">☁️ n8n Cloud | CPF-Automation
+──────────────────────────────────────
+📋 My Workflows          [+ New Workflow]
+
+  🔴 No workflows yet
+  Create your first workflow to get started
+
+Quick Start Templates:
+  📧 Email Automation
+  📊 Data Sync
+  🤖 AI Assistant   ← แนะนำสำหรับ CPF</div></div><div class="tip">💡 <span>ถ้าใช้เกิน Free Trial แนะนำ n8n Local (Module 05) ซึ่งฟรีไม่จำกัด</span></div></div></div><h2 class="section-title">Workshop: เชื่อมต่อ LLM กับ n8n</h2><div class="llm-grid">
+  <div class="llm-card" style="border-top:3px solid #412991">
+    <div class="llm-logo">🟢</div>
+    <div class="llm-name">OpenAI GPT</div>
+    <div class="llm-note">GPT-4o, GPT-4o-mini</div>
+    <div style="margin-top:8px"><span class="badge" style="background:#F3F0FF;color:#412991">Native Node</span></div>
+  </div>
+  <div class="llm-card" style="border-top:3px solid #1A73E8">
+    <div class="llm-logo">💎</div>
+    <div class="llm-name">Google Gemini</div>
+    <div class="llm-note">Gemini 2.0, 1.5 Pro</div>
+    <div style="margin-top:8px"><span class="badge" style="background:#E8F0FE;color:#1A73E8">Native Node</span></div>
+  </div>
+  <div class="llm-card" style="border-top:3px solid #D97706">
+    <div class="llm-logo">🤖</div>
+    <div class="llm-name">Claude (Anthropic)</div>
+    <div class="llm-note">Claude Sonnet 4.6</div>
+    <div style="margin-top:8px"><span class="badge" style="background:#FFFBEB;color:#B45309">HTTP Request</span></div>
+  </div>
+</div><div class="step"><div class="step-header"><div class="step-num" style="background:#2979C8">2</div><div class="step-info"><div class="step-title">เชื่อม OpenAI กับ n8n</div><div class="step-sub">ใช้ Node สำเร็จรูป</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>ใน Workflow กด <strong>+</strong> เพิ่ม Node</span></li><li><span class="n" style="background:#0D2137">2</span><span>ค้นหา <strong>OpenAI</strong> เลือก node</span></li><li><span class="n" style="background:#0D2137">3</span><span>กด <strong>Create new credential</strong></span></li><li><span class="n" style="background:#0D2137">4</span><span>ใส่ OpenAI API Key (จาก platform.openai.com)</span></li><li><span class="n" style="background:#0D2137">5</span><span>เลือก Operation: <strong>Message a Model</strong></span></li><li><span class="n" style="background:#0D2137">6</span><span>Model: <strong>gpt-4o-mini</strong> (ประหยัดที่สุด)</span></li><li><span class="n" style="background:#0D2137">7</span><span>ใส่ Prompt ใน User Message</span></li></ul><div class="screen-box"><div class="screen-head"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="screen-lbl">n8n — OpenAI Node</span></div><div class="screen-body">┌─────────────────────────────────────┐
+│ 🟢 OpenAI                            │
+│                                     │
+│ Credential: [CPF-OpenAI-Key    ▼]   │
+│ Resource:   [Chat              ▼]   │
+│ Operation:  [Message a Model   ▼]   │
+│ Model:      [gpt-4o-mini       ▼]   │
+│                                     │
+│ System Message:                     │
+│ [คุณเป็น QC Expert ของ CPF...  ]   │
+│                                     │
+│ User Message:                       │
+│ [{{ $json.qc_data }}           ]   │
+└─────────────────────────────────────┘</div></div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#2979C8">3</div><div class="step-info"><div class="step-title">เชื่อม Google Gemini กับ n8n</div><div class="step-sub"></div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>กด <strong>+</strong> ค้นหา <strong>Google Gemini</strong></span></li><li><span class="n" style="background:#0D2137">2</span><span>Create credential → ใส่ Gemini API Key (จาก aistudio.google.com ฟรี!)</span></li><li><span class="n" style="background:#0D2137">3</span><span>Model: <strong>gemini-2.0-flash</strong> (ฟรี ไม่จำกัด)</span></li><li><span class="n" style="background:#0D2137">4</span><span>Operation: Generate Content</span></li><li><span class="n" style="background:#0D2137">5</span><span>ใส่ Prompt ที่ต้องการ</span></li></ul><div class="tip">💡 <span>Gemini API ฟรีไม่จำกัด request สำหรับ Flash model — เหมาะมากสำหรับ Workshop</span></div></div></div><div class="step"><div class="step-header"><div class="step-num" style="background:#2979C8">4</div><div class="step-info"><div class="step-title">เชื่อม Claude (Anthropic) ผ่าน HTTP Request</div><div class="step-sub"></div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>กด <strong>+</strong> ค้นหา <strong>HTTP Request</strong></span></li><li><span class="n" style="background:#0D2137">2</span><span>Method: <strong>POST</strong></span></li><li><span class="n" style="background:#0D2137">3</span><span>URL: <code>https://api.anthropic.com/v1/messages</code></span></li><li><span class="n" style="background:#0D2137">4</span><span>Headers: เพิ่ม <code>x-api-key</code> = Anthropic API Key</span></li><li><span class="n" style="background:#0D2137">5</span><span>Headers: เพิ่ม <code>anthropic-version</code> = <code>2023-06-01</code></span></li><li><span class="n" style="background:#0D2137">6</span><span>Body: JSON → ใส่ model และ messages</span></li></ul><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Body JSON สำหรับ Claude API</span><button class="copy-btn" onclick="copyPrompt('p4b_claude',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p4b_claude">{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 1000,
+  "messages": [
+    {
+      "role": "user",
+      "content": "{{ $json.user_message }}"
+    }
+  ]
+}</pre></div><div class="note">✅ <span>Claude API Key ฟรีจาก console.anthropic.com มี free credits สำหรับทดลอง</span></div></div></div><h2 class="section-title">Workshop Workflows สำหรับ CPF</h2><div class="tab-bar">
+  <button class="tab-btn on" data-group="wf" data-target="wf1" onclick="showTab('wf','wf1')">📊 QC Alert</button>
+  <button class="tab-btn" data-group="wf" data-target="wf2" onclick="showTab('wf','wf2')">📧 Complaint Handler</button>
+  <button class="tab-btn" data-group="wf" data-target="wf3" onclick="showTab('wf','wf3')">📦 Stock Monitor</button>
+  <button class="tab-btn" data-group="wf" data-target="wf4" onclick="showTab('wf','wf4')">📝 Daily Report</button>
+</div><div id="wf1" class="tab-content on" data-group="wf">
+<div class="wf-box"><div class="wf-title">⏰ Workflow 1: QC Daily Alert — Schedule + AI + LINE</div><div class="wf-body" style="overflow-x:auto"><div style="font-size:11px;color:var(--muted);background:var(--gray50);border-radius:6px;padding:7px 12px;margin-bottom:12px;line-height:1.6">📋 ทำงาน: ทุกวัน 17:00 | ดึงข้อมูล QC → AI วิเคราะห์ → ถ้า Critical แจ้ง LINE ทันที</div><div style="display:flex;align-items:flex-start;flex-wrap:nowrap;min-width:fit-content"><div class="wf-node trigger" style="font-weight:600">⏰<br>Schedule<br>Trigger</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node data" style="font-weight:600">📊<br>Google<br>Sheets</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node ai" style="font-weight:600">🤖<br>Gemini /<br>Claude</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div><div class="wf-node cond" style="font-weight:600">🔀<br>IF:<br>Critical?</div><div style="margin-top:10px;padding-left:14px;border-left:2px solid #FCD34D;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#C0392B;min-width:40px;text-align:right">TRUE</span><div class="wf-node notify" style="font-weight:600">✅ LINE<br>แจ้งด่วน</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#1B7A3E;min-width:40px;text-align:right">FALSE</span><div class="wf-node action" style="font-weight:600">📧 Gmail<br>รายงาน</div></div></div></div></div></div></div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#1A4A7A">A</div><div class="step-info"><div class="step-title">ตั้งค่า Schedule Trigger</div><div class="step-sub">รันอัตโนมัติทุกวัน 17:00</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>เพิ่ม Node: <strong>Schedule Trigger</strong></span></li><li><span class="n" style="background:#0D2137">2</span><span>Mode: <strong>Cron</strong></span></li><li><span class="n" style="background:#0D2137">3</span><span>Cron Expression: <code>0 17 * * 1-5</code> (วันจันทร์-ศุกร์ 17:00)</span></li><li><span class="n" style="background:#0D2137">4</span><span>Timezone: <strong>Asia/Bangkok</strong></span></li></ul></div></div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#1A4A7A">B</div><div class="step-info"><div class="step-title">ดึงข้อมูลจาก Google Sheets</div><div class="step-sub"></div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>เพิ่ม Node: <strong>Google Sheets</strong></span></li><li><span class="n" style="background:#0D2137">2</span><span>Operation: <strong>Get Many</strong></span></li><li><span class="n" style="background:#0D2137">3</span><span>Spreadsheet: เลือก QC Report Spreadsheet ของ CPF</span></li><li><span class="n" style="background:#0D2137">4</span><span>Sheet: QC_Daily_Report</span></li><li><span class="n" style="background:#0D2137">5</span><span>Filter: วันที่ = วันนี้ (ใช้ expression <code>{{ $now.toFormat('yyyy-MM-dd') }}</code>)</span></li></ul></div></div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#1A4A7A">C</div><div class="step-info"><div class="step-title">ให้ AI วิเคราะห์ผล QC</div><div class="step-sub">เลือก OpenAI, Gemini หรือ Claude</div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Prompt: วิเคราะห์ QC สำหรับ n8n</span><button class="copy-btn" onclick="copyPrompt('p4b_qc_ai',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p4b_qc_ai">คุณเป็น QC Expert ของ CPF วิเคราะห์ข้อมูลต่อไปนี้:
+
+{{ JSON.stringify($json) }}
+
+ตรวจสอบ:
+- ความชื้น ≤ 12.0%
+- โปรตีน ≥ 22.0% (สุกร) หรือ ≥ 38% (กุ้ง)
+- ไขมัน ≤ 6.0%
+
+ตอบเป็น JSON:
+{
+  "status": "CRITICAL/WARNING/OK",
+  "failed_lots": [],
+  "warning_lots": [],
+  "summary_th": "สรุปภาษาไทย 2 บรรทัด",
+  "action": "สิ่งที่ต้องทำทันที"
+}</pre></div></div></div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#1A4A7A">D</div><div class="step-info"><div class="step-title">เงื่อนไข: ถ้า Critical → แจ้ง LINE</div><div class="step-sub">ส่งแจ้งเตือนตาม severity</div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>เพิ่ม Node: <strong>IF</strong></span></li><li><span class="n" style="background:#0D2137">2</span><span>Condition: <code>{{ $json.message.content[0].text }}</code> contains <code>CRITICAL</code></span></li><li><span class="n" style="background:#0D2137">3</span><span>True Branch → เพิ่ม Node: <strong>HTTP Request</strong> → LINE Notify</span></li><li><span class="n" style="background:#0D2137">4</span><span>False Branch → เพิ่ม Node: <strong>Gmail</strong> → ส่งรายงานปกติ</span></li></ul><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Body สำหรับ LINE Notify</span><button class="copy-btn" onclick="copyPrompt('p4b_line',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p4b_line">message=%0A🚨 CPF QC ALERT {{ $now.toFormat('dd/MM/yyyy') }}%0A%0A{{ $json.message.content[0].text }}%0A%0A📋 ดูรายละเอียด: Sheets</pre></div></div></div>
+</div><div id="wf2" class="tab-content" data-group="wf">
+<div class="wf-box"><div class="wf-title">📧 Workflow 2: Complaint Auto-Handler — Email Trigger</div><div class="wf-body" style="overflow-x:auto"><div style="font-size:11px;color:var(--muted);background:var(--gray50);border-radius:6px;padding:7px 12px;margin-bottom:12px;line-height:1.6">📋 ทุกครั้งที่มี Email Complaint เข้า → AI จัดหมวดหมู่ → บันทึก → แจ้งถ้าเร่งด่วน</div><div style="display:flex;align-items:flex-start;flex-wrap:nowrap;min-width:fit-content"><div class="wf-node trigger" style="font-weight:600">📥<br>Gmail<br>Trigger</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node ai" style="font-weight:600">🤖<br>Claude<br>Analyze</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node cond" style="font-weight:600;font-size:11px">⚙️<br>Code<br>JSON.parse</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node ai" style="font-weight:600;font-size:11px">✍️<br>Gemini<br>Draft Reply</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node data" style="font-weight:600">📊<br>Sheets<br>บันทึก</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div><div class="wf-node cond" style="font-weight:600">🔀<br>IF:<br>Severity?</div><div style="margin-top:10px;padding-left:14px;border-left:2px solid #FCD34D;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#C0392B;min-width:40px;text-align:right">URGENT</span><div class="wf-node notify" style="font-weight:600">🔴 LINE<br>แจ้งด่วน</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#1B7A3E;min-width:40px;text-align:right">NORMAL</span><div class="wf-node action" style="font-weight:600">📧 Auto-<br>Reply</div></div></div></div></div></div></div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#6D28D9">A</div><div class="step-info"><div class="step-title">Gmail Trigger — รับ Email ใหม่</div><div class="step-sub"></div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>เพิ่ม Node: <strong>Gmail Trigger</strong></span></li><li><span class="n" style="background:#0D2137">2</span><span>Operation: <strong>On Email Received</strong></span></li><li><span class="n" style="background:#0D2137">3</span><span>Label/Filter: <code>from:@farm.co.th</code> หรือ label complaint</span></li><li><span class="n" style="background:#0D2137">4</span><span>Poll Time: <strong>Every minute</strong></span></li></ul></div></div>
+<div style="background:#F5F3FF;border:1px solid #C4B5FD;border-radius:12px;padding:18px;margin-bottom:14px">
+<div style="font-size:13px;font-weight:700;color:#6D28D9;margin-bottom:14px">📨 ตัวอย่าง Email Complaint ที่เข้ามา — 3 ระดับความรุนแรง</div>
+
+<!-- TAB NAV -->
+<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+  <button onclick="showEmail('urgent')" id="tab-urgent"
+    style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #C0392B;background:#C0392B;color:#fff;font-family:inherit">
+    🔴 URGENT — สิ่งแปลกปลอม</button>
+  <button onclick="showEmail('medium')" id="tab-medium"
+    style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #B45309;background:#fff;color:#B45309;font-family:inherit">
+    🟡 MEDIUM — คุณภาพผิดปกติ</button>
+  <button onclick="showEmail('low')" id="tab-low"
+    style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #1B7A3E;background:#fff;color:#1B7A3E;font-family:inherit">
+    🟢 LOW — บรรจุภัณฑ์เสียหาย</button>
+</div>
+
+<!-- EMAIL: URGENT -->
+<div id="email-urgent">
+  <div style="background:#fff;border:1px solid #FECACA;border-radius:10px;overflow:hidden;font-size:13px">
+    <!-- Email Header -->
+    <div style="background:#FEF2F2;padding:12px 16px;border-bottom:1px solid #FECACA">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#1A2332;margin-bottom:6px">
+            🚨 ร้องเรียน: พบวัตถุแปลกปลอมในไก่ทอดแช่แข็ง CPF — LOT CP-240524-009
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#5A6B7E">
+            <span><strong>จาก:</strong> นายวิชัย สมใจ &lt;wichai.s@bigc-farm.co.th&gt;</span>
+            <span><strong>ถึง:</strong> complaint@cpf.co.th</span>
+            <span><strong>วันที่:</strong> ศุกร์ที่ 24 พ.ค. 2569, 14:32 น.</span>
+            <span><strong>หัวข้อ:</strong> ร้องเรียน: พบวัตถุแปลกปลอมในไก่ทอดแช่แข็ง CPF — LOT CP-240524-009</span>
+          </div>
+        </div>
+        <span style="background:#C0392B;color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0">🔴 URGENT</span>
+      </div>
+    </div>
+    <!-- Email Body -->
+    <div style="padding:16px;line-height:1.8;color:#1A2332">
+      <p>เรียน ฝ่ายควบคุมคุณภาพ CPF</p>
+      <p style="margin-top:10px">ข้าพเจ้านายวิชัย สมใจ ผู้จัดการคลังสินค้า บริษัท BigC Farm Supply จำกัด ขอร้องเรียนเรื่องการพบวัตถุแปลกปลอมในผลิตภัณฑ์ของท่าน</p>
+      <div style="background:#FEF2F2;border-left:3px solid #C0392B;border-radius:0 6px 6px 0;padding:10px 14px;margin:12px 0">
+        <div style="font-size:12px;font-weight:700;color:#C0392B;margin-bottom:6px">รายละเอียดจากฟอร์มร้องเรียน</div>
+        <table style="font-size:12px;width:100%;border-collapse:collapse">
+          <tr><td style="padding:3px 0;color:#5A6B7E;width:140px">สินค้า</td><td style="font-weight:600">ไก่ทอดแช่แข็ง CP (500g)</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">เลข LOT</td><td style="font-weight:600">CP-240524-009</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">วันที่ซื้อ</td><td style="font-weight:600">23 พ.ค. 2569</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">จำนวนที่ได้รับ</td><td style="font-weight:600">50 กล่อง</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">ประเภทปัญหา</td><td style="font-weight:600;color:#C0392B">สิ่งแปลกปลอม / Foreign Object</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">จำนวนที่เสียหาย</td><td style="font-weight:600">3 กล่อง (จากการสุ่มตรวจ)</td></tr>
+        </table>
+      </div>
+      <p>ทีมงานของเราพบ <strong>เศษโลหะขนาดเล็ก</strong> ปนอยู่ในชิ้นไก่ทอด จำนวน 3 กล่อง จาก LOT ดังกล่าว ขณะนี้ได้หยุดจำหน่ายสินค้าและแยกเก็บ LOT ดังกล่าวทั้งหมด 47 กล่องที่เหลือไว้แล้ว</p>
+      <p style="margin-top:8px">กรุณาดำเนินการ <strong>โดยด่วน</strong> เนื่องจากมีความเสี่ยงต่อความปลอดภัยผู้บริโภค</p>
+      <p style="margin-top:12px">ขอแสดงความนับถือ<br><strong>นายวิชัย สมใจ</strong><br>ผู้จัดการคลังสินค้า | BigC Farm Supply<br>โทร: 02-xxx-xxxx ต่อ 201</p>
+    </div>
+  </div>
+  <!-- Claude Output -->
+  <div style="margin-top:10px;background:#0D1117;border-radius:8px;padding:14px 16px;font-family:monospace;font-size:12px;color:#C9D1D9;line-height:1.8">
+    <div style="color:#8B949E;margin-bottom:6px">🤖 Claude วิเคราะห์แล้ว → JSON output:</div>
+<span style="color:#79C0FF">{</span>
+  <span style="color:#7EE787">"type"</span>: <span style="color:#A5D6FF">"quality"</span>,
+  <span style="color:#7EE787">"severity"</span>: <span style="color:#FF7B72">"urgent"</span>,
+  <span style="color:#7EE787">"product"</span>: <span style="color:#A5D6FF">"ไก่ทอดแช่แข็ง CP 500g"</span>,
+  <span style="color:#7EE787">"lot_number"</span>: <span style="color:#A5D6FF">"CP-240524-009"</span>,
+  <span style="color:#7EE787">"key_issue"</span>: <span style="color:#A5D6FF">"พบเศษโลหะในผลิตภัณฑ์ 3 กล่อง ลูกค้าหยุดจำหน่ายแล้ว"</span>,
+  <span style="color:#7EE787">"internal_action"</span>: <span style="color:#A5D6FF">"แจ้ง QC+Production ทันที — Recall LOT CP-240524-009 ทั้งหมด"</span>
+<span style="color:#79C0FF">}</span>
+<span style="color:#3FB950">→ IF severity = urgent → LINE แจ้ง CS Manager + QC Manager ทันที</span></div>
+</div>
+
+<!-- EMAIL: MEDIUM -->
+<div id="email-medium" style="display:none">
+  <div style="background:#fff;border:1px solid #FDE68A;border-radius:10px;overflow:hidden;font-size:13px">
+    <div style="background:#FFFBEB;padding:12px 16px;border-bottom:1px solid #FDE68A">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#1A2332;margin-bottom:6px">
+            สอบถามเรื่องสีของหมูชิ้นแช่เย็น CP ผิดปกติ
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#5A6B7E">
+            <span><strong>จาก:</strong> ร้านอาหาร ครัวคุณแม่ &lt;kruaykunmae@gmail.com&gt;</span>
+            <span><strong>ถึง:</strong> complaint@cpf.co.th</span>
+            <span><strong>วันที่:</strong> พุธที่ 22 พ.ค. 2569, 09:15 น.</span>
+          </div>
+        </div>
+        <span style="background:#B45309;color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0">🟡 MEDIUM</span>
+      </div>
+    </div>
+    <div style="padding:16px;line-height:1.8;color:#1A2332">
+      <p>สวัสดีครับ ทางร้านได้รับหมูชิ้นแช่เย็น CP มาเมื่อวาน</p>
+      <div style="background:#FFFBEB;border-left:3px solid #B45309;border-radius:0 6px 6px 0;padding:10px 14px;margin:12px 0">
+        <div style="font-size:12px;font-weight:700;color:#B45309;margin-bottom:6px">รายละเอียดจากฟอร์มร้องเรียน</div>
+        <table style="font-size:12px;width:100%;border-collapse:collapse">
+          <tr><td style="padding:3px 0;color:#5A6B7E;width:140px">สินค้า</td><td style="font-weight:600">หมูชิ้นแช่เย็น CP (1kg)</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">เลข LOT</td><td style="font-weight:600">PK-240521-022</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">วันที่ซื้อ</td><td style="font-weight:600">21 พ.ค. 2569</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">ประเภทปัญหา</td><td style="font-weight:600;color:#B45309">คุณภาพผิดปกติ / Quality Issue</td></tr>
+        </table>
+      </div>
+      <p>สังเกตว่าเนื้อมีสีคล้ำผิดปกติ บางชิ้นมีกลิ่นอ่อนๆ ยังไม่หมดอายุ (หมดอายุ 28 พ.ค.) สั่งมาทั้งหมด 10 ถุง ขอให้ตรวจสอบด้วยครับ</p>
+    </div>
+  </div>
+  <div style="margin-top:10px;background:#0D1117;border-radius:8px;padding:14px 16px;font-family:monospace;font-size:12px;color:#C9D1D9;line-height:1.8">
+    <div style="color:#8B949E;margin-bottom:6px">🤖 Claude วิเคราะห์แล้ว → JSON output:</div>
+<span style="color:#79C0FF">{</span>
+  <span style="color:#7EE787">"type"</span>: <span style="color:#A5D6FF">"quality"</span>,
+  <span style="color:#7EE787">"severity"</span>: <span style="color:#FFA657">"medium"</span>,
+  <span style="color:#7EE787">"product"</span>: <span style="color:#A5D6FF">"หมูชิ้นแช่เย็น CP 1kg"</span>,
+  <span style="color:#7EE787">"lot_number"</span>: <span style="color:#A5D6FF">"PK-240521-022"</span>,
+  <span style="color:#7EE787">"key_issue"</span>: <span style="color:#A5D6FF">"สีเนื้อคล้ำและมีกลิ่นอ่อน ยังไม่หมดอายุ — 10 ถุง"</span>,
+  <span style="color:#7EE787">"internal_action"</span>: <span style="color:#A5D6FF">"แจ้ง QC ตรวจสอบ cold chain LOT PK-240521-022 ภายใน 24 ชม."</span>
+<span style="color:#79C0FF">}</span>
+<span style="color:#FFA657">→ IF severity = medium → บันทึก Sheets + ส่ง auto-reply แจ้งว่าอยู่ระหว่างตรวจสอบ</span></div>
+</div>
+
+<!-- EMAIL: LOW -->
+<div id="email-low" style="display:none">
+  <div style="background:#fff;border:1px solid #86EFAC;border-radius:10px;overflow:hidden;font-size:13px">
+    <div style="background:#F0FFF4;padding:12px 16px;border-bottom:1px solid #86EFAC">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#1A2332;margin-bottom:6px">
+            กล่องไข่ CP บรรจุภัณฑ์แตกเสียหาย — ขอเปลี่ยนสินค้า
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#5A6B7E">
+            <span><strong>จาก:</strong> นางสาวประภา รักสะอาด &lt;prapa.r@homeshop.co.th&gt;</span>
+            <span><strong>ถึง:</strong> complaint@cpf.co.th</span>
+            <span><strong>วันที่:</strong> จันทร์ที่ 20 พ.ค. 2569, 11:04 น.</span>
+          </div>
+        </div>
+        <span style="background:#1B7A3E;color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0">🟢 LOW</span>
+      </div>
+    </div>
+    <div style="padding:16px;line-height:1.8;color:#1A2332">
+      <p>สวัสดีค่ะ หนูสั่งไข่ไก่ CP Size L มาทางออนไลน์ พอได้รับพัสดุปรากฏว่ากล่องบุบยุบ ไข่แตก 4 ฟอง</p>
+      <div style="background:#F0FFF4;border-left:3px solid #1B7A3E;border-radius:0 6px 6px 0;padding:10px 14px;margin:12px 0">
+        <div style="font-size:12px;font-weight:700;color:#1B7A3E;margin-bottom:6px">รายละเอียดจากฟอร์มร้องเรียน</div>
+        <table style="font-size:12px;width:100%;border-collapse:collapse">
+          <tr><td style="padding:3px 0;color:#5A6B7E;width:140px">สินค้า</td><td style="font-weight:600">ไข่ไก่ CP Size L (30 ฟอง)</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">Order No.</td><td style="font-weight:600">ORD-2024-88821</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">วันที่ได้รับ</td><td style="font-weight:600">20 พ.ค. 2569</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">ประเภทปัญหา</td><td style="font-weight:600;color:#1B7A3E">บรรจุภัณฑ์เสียหาย / Packaging</td></tr>
+          <tr><td style="padding:3px 0;color:#5A6B7E">ความต้องการ</td><td style="font-weight:600">ขอเปลี่ยนสินค้าหรือคืนเงิน</td></tr>
+        </table>
+      </div>
+      <p>แนบรูปถ่ายความเสียหายมาด้วยค่ะ รบกวนช่วยดูแลด้วยนะคะ ขอบคุณมากค่ะ</p>
+    </div>
+  </div>
+  <div style="margin-top:10px;background:#0D1117;border-radius:8px;padding:14px 16px;font-family:monospace;font-size:12px;color:#C9D1D9;line-height:1.8">
+    <div style="color:#8B949E;margin-bottom:6px">🤖 Claude วิเคราะห์แล้ว → JSON output:</div>
+<span style="color:#79C0FF">{</span>
+  <span style="color:#7EE787">"type"</span>: <span style="color:#A5D6FF">"delivery"</span>,
+  <span style="color:#7EE787">"severity"</span>: <span style="color:#3FB950">"low"</span>,
+  <span style="color:#7EE787">"product"</span>: <span style="color:#A5D6FF">"ไข่ไก่ CP Size L 30 ฟอง"</span>,
+  <span style="color:#7EE787">"lot_number"</span>: <span style="color:#A5D6FF">"ORD-2024-88821"</span>,
+  <span style="color:#7EE787">"key_issue"</span>: <span style="color:#A5D6FF">"กล่องแตกระหว่างขนส่ง ไข่เสียหาย 4 ฟอง ลูกค้าขอเปลี่ยน/คืนเงิน"</span>,
+  <span style="color:#7EE787">"auto_reply_th"</span>: <span style="color:#A5D6FF">"เรียนคุณประภา ขอโทษในความไม่สะดวก ทีมงานจะติดต่อกลับภายใน 1 วันทำการ..."</span>,
+  <span style="color:#7EE787">"internal_action"</span>: <span style="color:#A5D6FF">"แจ้ง Logistics ตรวจสอบการบรรจุ — ส่ง auto-reply + คูปอง 50 บาท"</span>
+<span style="color:#79C0FF">}</span>
+<span style="color:#3FB950">→ IF severity = low → บันทึก Sheets + ส่ง auto-reply มาตรฐานอัตโนมัติ</span></div>
+</div>
+
+</div>
+
+<script>
+function showEmail(type) {
+  ['urgent','medium','low'].forEach(function(t) {
+    var el = document.getElementById('email-'+t);
+    var tb = document.getElementById('tab-'+t);
+    if (!el || !tb) return;
+    var colors = {urgent:['#C0392B','#fff'], medium:['#B45309','#fff'], low:['#1B7A3E','#fff']};
+    if (t === type) {
+      el.style.display = 'block';
+      tb.style.background = colors[t][0]; tb.style.color = colors[t][1];
+    } else {
+      el.style.display = 'none';
+      tb.style.background = '#fff'; tb.style.color = colors[t][0];
+    }
+  });
+}
+</script><div class="step"><div class="step-header"><div class="step-num" style="background:#6D28D9">B</div><div class="step-info"><div class="step-title">Claude วิเคราะห์ + ร่าง Email ตอบกลับ</div><div class="step-sub">1 LLM call — วิเคราะห์ปัญหาและเขียน reply email พร้อมกัน ประหยัดกว่า 2 calls</div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Prompt: Complaint Analyzer + Auto-Reply (1 call)</span><button class="copy-btn" onclick="copyPrompt('p4b_complaint',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p4b_complaint">คุณเป็น CS Expert ของ CPF (CP Foods) มีหน้าที่ 2 อย่างในคราวเดียว:
+1) วิเคราะห์ complaint email
+2) ร่าง email ตอบกลับลูกค้าภาษาไทยที่สุภาพและเป็นมืออาชีพ
+
+━━━ Email ที่ได้รับ ━━━
+Subject : {{ $json.subject }}
+From    : {{ $json.from }}
+Body    :
+{{ $json.text }}
+━━━━━━━━━━━━━━━━━━━━━━━
+
+ตอบเป็น JSON เท่านั้น ห้ามมีข้อความนอก JSON:
+{
+  "type": "quality|delivery|price|service|other",
+  "severity": "urgent|medium|low",
+  "product": "ชื่อผลิตภัณฑ์ที่ระบุในอีเมล หรือ 'ไม่ระบุ'",
+  "lot_number": "เลข LOT ถ้าระบุ หรือ ''",
+  "key_issue": "สรุปปัญหาหลัก 1 ประโยค ภาษาไทย",
+  "internal_action": "สิ่งที่ทีม CPF ต้องทำเป็นลำดับ เช่น แจ้ง QC / Recall LOT / ส่ง voucher",
+  "auto_reply_th": "[เขียนเนื้อหา email ตอบกลับสมบูรณ์ที่นี่ โดย:
+- ขึ้นต้น: เรียน คุณ [ชื่อจาก From]
+- แสดงความเสียใจและยืนยันว่ารับเรื่องแล้ว
+- บอก SLA ตาม severity:
+    urgent → ติดต่อกลับภายใน 2 ชั่วโมง + ระงับ LOT ทันที
+    medium → ตรวจสอบและแจ้งภายใน 1 วันทำการ
+    low    → ดำเนินการภายใน 2 วันทำการ
+- ลงท้าย: ทีม Customer Service | CPF (CP Foods)
+- ใช้ภาษาสุภาพ ไม่ยาวเกิน 5 ย่อหน้า]"
+}</pre></div><div style="background:#F0FFF4;border-left:4px solid #1B7A3E;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#1B7A3E;margin-top:12px;display:flex;gap:10px">✅ <span><strong>1 LLM Call แทน 2 Calls</strong> — Claude วิเคราะห์และเขียน reply ในขั้นตอนเดียว ประหยัด latency ~50% | หลัง Parse JSON (Step B2) ใช้ <code style="background:#C8E6C9;padding:1px 5px;border-radius:3px">{{ $json.auto_reply_th }}</code> ใน Gmail Node ได้เลย — ไม่ต้องการ Step B3 อีกต่อไป</span></div><div style="margin-top:12px"><div style="font-size:12px;font-weight:600;color:#6D28D9;margin-bottom:6px">📤 ตัวอย่าง Output JSON ที่ได้ (severity: urgent)</div><div style="background:#0D1117;border-radius:8px;padding:14px 16px;font-family:monospace;font-size:12px;color:#C9D1D9;line-height:1.9;overflow-x:auto"><span style="color:#79C0FF">{</span>
+  <span style="color:#7EE787">"type"</span>: <span style="color:#A5D6FF">"quality"</span>,
+  <span style="color:#7EE787">"severity"</span>: <span style="color:#FF7B72">"urgent"</span>,
+  <span style="color:#7EE787">"product"</span>: <span style="color:#A5D6FF">"ไก่ทอดแช่แข็ง CP 500g"</span>,
+  <span style="color:#7EE787">"lot_number"</span>: <span style="color:#A5D6FF">"CP-240524-009"</span>,
+  <span style="color:#7EE787">"key_issue"</span>: <span style="color:#A5D6FF">"พบเศษโลหะใน 3 กล่อง ลูกค้าหยุดจำหน่ายแล้ว"</span>,
+  <span style="color:#7EE787">"internal_action"</span>: <span style="color:#A5D6FF">"1.แจ้ง QC+Production ทันที 2.Recall LOT CP-240524-009 3.ตรวจสอบสายการผลิต"</span>,
+  <span style="color:#7EE787">"auto_reply_th"</span>: <span style="color:#A5D6FF">"เรียน คุณวิชัย สมใจ\n\nทีม Customer Service ของ CPF ขอแสดงความเสียใจอย่างยิ่ง...\n\nทางบริษัทฯ ได้ระงับ LOT CP-240524-009 ทั้งหมดทันที และทีม QC กำลังดำเนินการตรวจสอบ\n\nจะติดต่อกลับภายใน 2 ชั่วโมง\n\nทีม Customer Service | CPF (CP Foods)"</span>
+<span style="color:#79C0FF">}</span>
+<div style="margin-top:8px;color:#3FB950">→ Gmail Node ใช้: <span style="color:#FFA657">{{ $json.auto_reply_th }}</span> เป็น Body ได้เลย</div></div></div></div></div>
+
+<!-- ─── Step B2: Parse JSON ─── -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#6D28D9">B2</div>
+    <div class="step-info">
+      <div class="step-title">Parse JSON String จาก LLM</div>
+      <div class="step-sub">ไม่ต้อง loop ทีละ item — 3 วิธี เลือกแบบที่ง่ายที่สุด</div>
+    </div>
+  </div>
+  <div class="step-body">
+
+    <div style="background:#FEF0EE;border-left:4px solid #C0392B;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#C0392B;margin-bottom:16px;display:flex;gap:10px">
+      ⚠️ <span>LLM ส่งคืนเป็น <strong>plain string</strong> เช่น <code style="background:#FECACA;padding:1px 5px;border-radius:3px">"{"severity":"urgent",...}"</code> — ต้อง parse ก่อนใช้ field ถัดไป</span>
+    </div>
+
+    <!-- ── Option tabs ── -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button onclick="showParse('set')" id="ptab-set"
+        style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #1B7A3E;background:#1B7A3E;color:#fff;font-family:inherit">
+        ⭐ วิธี 1 — Set Node (ง่ายสุด)</button>
+      <button onclick="showParse('each')" id="ptab-each"
+        style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #2979C8;background:#fff;color:#2979C8;font-family:inherit">
+        วิธี 2 — Code: Each Item</button>
+      <button onclick="showParse('all')" id="ptab-all"
+        style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #6D28D9;background:#fff;color:#6D28D9;font-family:inherit">
+        วิธี 3 — Code: All Items</button>
+    </div>
+
+    <!-- ── วิธี 1: Set Node ── -->
+    <div id="parse-set">
+      <div style="background:#EDFAF2;border-left:4px solid #1B7A3E;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#1B7A3E;margin-bottom:12px;display:flex;gap:10px">
+        ⭐ <span><strong>แนะนำสำหรับ workflow นี้</strong> — ไม่ต้องเขียนโค้ดเลย ใช้ Expression ใน Set Node แทน</span>
+      </div>
+      <ul class="inst-list">
+        <li><span class="n" style="background:#1B7A3E">1</span><span>เพิ่ม Node: <strong>Edit Fields (Set)</strong></span></li>
+        <li><span class="n" style="background:#1B7A3E">2</span><span>กด <strong>Add Field</strong> → ตั้งชื่อ <code>parsed</code></span></li>
+        <li><span class="n" style="background:#1B7A3E">3</span><span>Value: สลับเป็น <strong>Expression</strong> แล้ววาง:</span></li>
+      </ul>
+      <div class="prompt-box" style="border-color:#86EFAC;background:#F0FFF4">
+        <div class="prompt-head" style="background:#DCFCE7;border-color:#86EFAC">
+          <span class="prompt-label" style="color:#1B7A3E">Expression ใน Set Node (Claude)</span>
+          <button class="copy-btn" onclick="copyPrompt('expr_claude',this)">⎘ คัดลอก</button>
+        </div>
+        <pre class="prompt-body" id="expr_claude">{{ JSON.parse($json.message.content[0].text) }}</pre>
+      </div>
+      <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;display:flex;gap:8px;align-items:flex-start"><span>⚠️</span><span><strong style="color:#B45309">Gemini มักส่ง JSON ห่อด้วย</strong> <code style="background:#FEF3C7;padding:1px 5px;border-radius:3px">```json\n...\n```</code> — expression Gemini ด้านล่างนี้ strip ออกให้แล้ว · Claude และ OpenAI ปกติไม่มีปัญหานี้</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;font-size:12px">
+        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px">
+          <div style="font-weight:600;color:#1A73E8;margin-bottom:4px">OpenAI / GPT</div>
+          <code style="font-size:11px">{{ JSON.parse($json.choices[0].message.content) }}</code>
+        </div>
+        <div style="background:#FEF9C3;border:2px solid #FDE047;border-radius:8px;padding:10px">
+          <div style="font-weight:600;color:#B45309;margin-bottom:4px">Gemini ⚠️ ต้อง strip ```json``` ก่อน</div>
+          <code style="font-size:11px;word-break:break-all">{{ JSON.parse($json.candidates[0].content.parts[0].text.replace(/^```json\s*/i,"").replace(/```\s*$/,"").trim()) }}</code>
+        </div>
+      </div>
+      <div style="background:#F0FFF4;border:1px solid #86EFAC;border-radius:10px;padding:12px 14px;font-size:12px;color:#1A2332">
+        <div style="font-weight:700;color:#1B7A3E;margin-bottom:6px">📤 ใช้งานใน Node ถัดไป</div>
+        <div style="font-family:monospace;line-height:2">
+          <div>severity → <code style="background:#E0F2FE;padding:1px 5px;border-radius:3px">{{ $json.parsed.severity }}</code></div>
+          <div>product → <code style="background:#E0F2FE;padding:1px 5px;border-radius:3px">{{ $json.parsed.product }}</code></div>
+          <div>auto_reply_th → <code style="background:#E0F2FE;padding:1px 5px;border-radius:3px">{{ $json.parsed.auto_reply_th }}</code></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── วิธี 2: Code Each Item ── -->
+    <div id="parse-each" style="display:none">
+      <div style="background:#EFF6FF;border-left:4px solid #2979C8;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#1A4A7A;margin-bottom:12px;display:flex;gap:10px">
+        💡 <span>Mode <strong>"Run Once for Each Item"</strong> — n8n วน loop ให้อัตโนมัติ ไม่ต้องเขียน loop เอง · <strong style="color:#C0392B">ถ้าใช้ Gemini แนะนำวิธีนี้</strong> เพราะ strip <code style="background:#DBEAFE;padding:1px 4px;border-radius:3px">```json```</code> ออกให้อัตโนมัติ</span>
+      </div>
+      <ul class="inst-list">
+        <li><span class="n" style="background:#2979C8">1</span><span>เพิ่ม Node: <strong>Code</strong></span></li>
+        <li><span class="n" style="background:#2979C8">2</span><span>Mode: <strong>Run Once for Each Item</strong> ← สำคัญ</span></li>
+        <li><span class="n" style="background:#2979C8">3</span><span>วาง code ด้านล่าง:</span></li>
+      </ul>
+      <div class="prompt-box" style="border-color:#A0BBE8;background:#EFF6FF">
+        <div class="prompt-head" style="background:#DBEAFE;border-color:#A0BBE8">
+          <span class="prompt-label" style="color:#2979C8">Code Node — Run Once for Each Item</span>
+          <button class="copy-btn" onclick="copyPrompt('code_each',this)">⎘ คัดลอก</button>
+        </div>
+        <pre class="prompt-body" id="code_each">// n8n ส่ง item ปัจจุบันมาให้ทาง $input.item — ไม่ต้อง loop
+const raw =
+  $input.item.json?.message?.content?.[0]?.text   // Claude
+  ?? $input.item.json?.choices?.[0]?.message?.content  // OpenAI
+  ?? $input.item.json?.candidates?.[0]?.content?.parts?.[0]?.text; // Gemini
+
+// กำจัด ```json ``` ที่ Gemini และ LLM บางตัวห่อมา — ทำงานกับทุก LLM
+const clean = raw.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+
+// return object เดียว — n8n จัดการ item ให้เอง
+return JSON.parse(clean);</pre>
+      </div>
+      <div style="background:#EFF6FF;border:1px solid #A0BBE8;border-radius:10px;padding:12px 14px;font-size:12px;color:#1A2332">
+        <div style="font-weight:700;color:#2979C8;margin-bottom:6px">📤 ใช้งานใน Node ถัดไป — field โดยตรง (ไม่มี .parsed)</div>
+        <div style="font-family:monospace;line-height:2">
+          <div><code style="background:#E0F2FE;padding:1px 5px;border-radius:3px">{{ $json.severity }}</code> &nbsp;
+               <code style="background:#E0F2FE;padding:1px 5px;border-radius:3px">{{ $json.product }}</code> &nbsp;
+               <code style="background:#E0F2FE;padding:1px 5px;border-radius:3px">{{ $json.auto_reply_th }}</code></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── วิธี 3: Code All Items ── -->
+    <div id="parse-all" style="display:none">
+      <div style="background:#F5F3FF;border-left:4px solid #6D28D9;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#5B21B6;margin-bottom:12px;display:flex;gap:10px">
+        💡 <span>Mode <strong>"Run Once for All Items"</strong> — ต้องเขียน loop เอง ใช้เมื่ออยากควบคุม logic ซับซ้อนหรือมี fallback รายการ</span>
+      </div>
+      <ul class="inst-list">
+        <li><span class="n" style="background:#6D28D9">1</span><span>เพิ่ม Node: <strong>Code</strong></span></li>
+        <li><span class="n" style="background:#6D28D9">2</span><span>Mode: <strong>Run Once for All Items</strong></span></li>
+        <li><span class="n" style="background:#6D28D9">3</span><span>วาง code ด้านล่าง:</span></li>
+      </ul>
+      <div class="prompt-box" style="border-color:#C4B5FD;background:#F5F3FF">
+        <div class="prompt-head" style="background:#EDE9FE;border-color:#C4B5FD">
+          <span class="prompt-label" style="color:#6D28D9">Code Node — Run Once for All Items (loop)</span>
+          <button class="copy-btn" onclick="copyPrompt('code_all',this)">⎘ คัดลอก</button>
+        </div>
+        <pre class="prompt-body" id="code_all">const results = [];
+
+for (const item of $input.all()) {
+  const raw =
+    item.json?.message?.content?.[0]?.text
+    ?? item.json?.choices?.[0]?.message?.content
+    ?? item.json?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+
+  const clean = raw.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+
+  try {
+    results.push({ json: JSON.parse(clean) });
+  } catch (e) {
+    // fallback ถ้า parse ไม่ได้
+    results.push({ json: { severity: 'medium', key_issue: raw.slice(0, 200), parse_error: e.message } });
+  }
+}
+
+return results;</pre>
+      </div>
+    </div>
+
+    <!-- Comparison table -->
+    <div style="margin-top:16px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <tr style="background:#0D2137;color:#fff">
+          <th style="padding:8px 12px;text-align:left">วิธี</th>
+          <th style="padding:8px 12px;text-align:left">เขียนโค้ด</th>
+          <th style="padding:8px 12px;text-align:left">Loop</th>
+          <th style="padding:8px 12px;text-align:left">เหมาะกับ</th>
+        </tr>
+        <tr style="background:#EDFAF2">
+          <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0"><strong>⭐ Set Node</strong></td>
+          <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">ไม่ต้อง</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">อัตโนมัติ</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">workflow ทั่วไป 1 email / 1 item</td>
+        </tr>
+        <tr style="background:#EFF6FF">
+          <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">Code: Each Item</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">5 บรรทัด</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">อัตโนมัติ</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0">Gemini (strip ```json``` อัตโนมัติ) หรือต้องการ transform เพิ่ม</td>
+        </tr>
+        <tr style="background:#F5F3FF">
+          <td style="padding:8px 12px">Code: All Items</td>
+          <td style="padding:8px 12px">15+ บรรทัด</td>
+          <td style="padding:8px 12px">เขียนเอง</td>
+          <td style="padding:8px 12px">batch processing หลาย emails พร้อมกัน + fallback</td>
+        </tr>
+      </table>
+    </div>
+
+    <script>
+    function showParse(t){
+      ['set','each','all'].forEach(function(k){
+        var el=document.getElementById('parse-'+k);
+        var tb=document.getElementById('ptab-'+k);
+        if(!el||!tb)return;
+        var col={set:'#1B7A3E',each:'#2979C8',all:'#6D28D9'};
+        if(k===t){el.style.display='block';tb.style.background=col[k];tb.style.color='#fff';}
+        else{el.style.display='none';tb.style.background='#fff';tb.style.color=col[k];}
+      });
+    }
+    </script>
+
+  </div>
+</div>
+
+
+<!-- ─── Step B3: Draft Auto-Reply ─── -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#6D28D9">B3</div>
+    <div class="step-info">
+      <div class="step-title">ร่าง Email ตอบกลับลูกค้าด้วย LLM</div>
+      <div class="step-sub">ใช้ข้อมูลที่ parse แล้ว → ให้ Gemini/Claude เขียน email สุภาพเป็นภาษาไทย</div>
+    </div>
+  </div>
+  <div class="step-body">
+
+    <div style="background:#F1F5F9;border:2px dashed #94A3B8;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">⏭️</span><div style="font-size:13px;color:#475569"><strong style="color:#1A2332">ถ้าใช้ prompt รวมใน Step B แล้ว — ข้ามขั้นตอนนี้ได้เลย</strong><br>นำ <code style="background:#E2E8F0;padding:1px 5px;border-radius:3px">{{ $json.auto_reply_th }}</code> ที่ได้จาก Step B2 (parse) ไปใส่ใน Gmail Node Body โดยตรง ไม่ต้องเรียก LLM อีกรอบ</div></div><div class="note" style="background:#EDFAF2;border-left:4px solid #1B7A3E;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#1B7A3E;margin-bottom:14px;display:flex;gap:10px">
+      ✅ <span>ใช้ <strong>Gemini Flash (ฟรี)</strong> สำหรับขั้นตอนนี้ — ประหยัดค่าใช้จ่าย เพราะเป็นแค่การเขียน email ไม่ต้องใช้โมเดลใหญ่</span>
+    </div>
+
+    <ul class="inst-list" style="background:var(--gray50);border-radius:8px;padding:14px 16px;list-style:none;margin-bottom:14px">
+      <li style="display:flex;gap:10px;padding:5px 0;font-size:13px;border-bottom:1px solid #E2E8F0">
+        <span class="n" style="min-width:20px;height:20px;border-radius:50%;background:#6D28D9;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">1</span>
+        <span>เพิ่ม Node: <strong>Google Gemini</strong> (หรือ OpenAI / Claude)</span>
+      </li>
+      <li style="display:flex;gap:10px;padding:5px 0;font-size:13px;border-bottom:1px solid #E2E8F0">
+        <span class="n" style="min-width:20px;height:20px;border-radius:50%;background:#6D28D9;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">2</span>
+        <span>Model: <strong>gemini-2.0-flash</strong> | Operation: <strong>Generate Content</strong></span>
+      </li>
+      <li style="display:flex;gap:10px;padding:5px 0;font-size:13px">
+        <span class="n" style="min-width:20px;height:20px;border-radius:50%;background:#6D28D9;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">3</span>
+        <span>วาง Prompt ด้านล่างใน Prompt field</span>
+      </li>
+    </ul>
+
+    <div class="prompt-box">
+      <div class="prompt-head">
+        <span class="prompt-label">📋 Prompt: Draft Reply Email (ใช้ n8n expressions)</span>
+        <button class="copy-btn" onclick="copyPrompt('p4b_draft_reply',this)">⎘ คัดลอก</button>
+      </div>
+      <pre class="prompt-body" id="p4b_draft_reply">คุณเป็น CS Agent ของ CPF (CP Foods) เชี่ยวชาญการเขียนอีเมลตอบลูกค้าภาษาไทยสุภาพและเป็นมืออาชีพ
+
+ข้อมูล Complaint ที่ได้รับ:
+- ประเภท: {{ $json.type }}
+- ความรุนแรง: {{ $json.severity }}
+- สินค้า: {{ $json.product }}
+- เลข LOT: {{ $json.lot_number }}
+- ปัญหาหลัก: {{ $json.key_issue }}
+
+จงเขียน Email ตอบกลับลูกค้าที่:
+1. ขึ้นต้นด้วย "เรียน คุณ [ชื่อลูกค้า]" (เว้นไว้ให้กรอกเอง)
+2. แสดงความเสียใจและรับเรื่องร้องเรียน
+3. แจ้งสิ่งที่ CPF จะดำเนินการ ตามระดับความรุนแรง:
+   - urgent → แจ้งว่าจะติดต่อกลับภายใน 2 ชั่วโมง และระงับ LOT ทันที
+   - medium → แจ้งว่าจะตรวจสอบและติดต่อกลับภายใน 1 วันทำการ
+   - low    → แจ้งว่าจะดำเนินการเปลี่ยน/คืนและติดต่อภายใน 2 วันทำการ
+4. ลงท้ายด้วยชื่อทีม: "ทีม Customer Service | CPF (CP Foods)"
+
+ตอบเฉพาะเนื้อหาอีเมลเท่านั้น ไม่ต้องมีคำอธิบายเพิ่มเติม</pre>
+    </div>
+
+    <!-- ตัวอย่าง output แบบ tab -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:600;color:#6D28D9;margin-bottom:8px">📬 ตัวอย่าง Email ที่ LLM ร่างให้ — แยกตาม Severity</div>
+
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <button onclick="showReply('ru')" id="rtab-ru"
+          style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid #C0392B;background:#C0392B;color:#fff;font-family:inherit">🔴 URGENT</button>
+        <button onclick="showReply('rm')" id="rtab-rm"
+          style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid #B45309;background:#fff;color:#B45309;font-family:inherit">🟡 MEDIUM</button>
+        <button onclick="showReply('rl')" id="rtab-rl"
+          style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid #1B7A3E;background:#fff;color:#1B7A3E;font-family:inherit">🟢 LOW</button>
+      </div>
+
+      <div id="reply-ru" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:16px;font-size:13px;line-height:1.9;white-space:pre-wrap;color:#1A2332">เรียน คุณ [วิชัย สมใจ]
+
+ทางทีม Customer Service ของ CPF (CP Foods) ขอแสดงความเสียใจเป็นอย่างยิ่งสำหรับปัญหาที่เกิดขึ้นกับผลิตภัณฑ์ ไก่ทอดแช่แข็ง CP 500g (LOT CP-240524-009) และขอรับเรื่องร้องเรียนของท่านไว้ด้วยความจริงจัง
+
+จากรายงานที่ได้รับเรื่องพบวัตถุแปลกปลอม ทางบริษัทฯ ได้ดำเนินการ <strong>ระงับ LOT CP-240524-009 ทั้งหมดทันที</strong> และทีมผู้เชี่ยวชาญ QC กำลังดำเนินการตรวจสอบอยู่ในขณะนี้
+
+ทีมงานของเราจะ<strong>ติดต่อกลับภายใน 2 ชั่วโมง</strong> เพื่อประสานงานในการรับคืนสินค้าและดำเนินการตามขั้นตอนต่อไป
+
+ขออภัยในความไม่สะดวกที่เกิดขึ้นอีกครั้ง
+
+ขอแสดงความนับถือ
+ทีม Customer Service | CPF (CP Foods)
+โทร: 02-XXX-XXXX | cs@cpf.co.th</div>
+
+      <div id="reply-rm" style="display:none;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:16px;font-size:13px;line-height:1.9;white-space:pre-wrap;color:#1A2332">เรียน คุณ [ชื่อลูกค้า]
+
+ทีม Customer Service ของ CPF ขอขอบคุณที่แจ้งปัญหามายังเรา และขออภัยในความไม่สะดวกที่เกิดขึ้นกับผลิตภัณฑ์ หมูชิ้นแช่เย็น CP 1kg (LOT PK-240521-022) ของท่าน
+
+ทางทีม QC ของเราได้รับทราบเรื่องเรื่องสีเนื้อและกลิ่นที่ผิดปกติแล้ว และกำลังดำเนินการตรวจสอบที่ขั้นตอนการผลิตและ cold chain logistics
+
+ทีมงานจะ<strong>ติดต่อกลับภายใน 1 วันทำการ</strong> เพื่อแจ้งผลการตรวจสอบและแนวทางการชดเชย
+
+ขอแสดงความนับถือ
+ทีม Customer Service | CPF (CP Foods)</div>
+
+      <div id="reply-rl" style="display:none;background:#F0FFF4;border:1px solid #86EFAC;border-radius:10px;padding:16px;font-size:13px;line-height:1.9;white-space:pre-wrap;color:#1A2332">เรียน คุณประภา รักสะอาด
+
+ทีม Customer Service ของ CPF ขอขอบคุณที่แจ้งปัญหาการจัดส่งมายังเรา
+
+ทางบริษัทฯ เสียใจเป็นอย่างยิ่งที่ผลิตภัณฑ์ ไข่ไก่ CP Size L (ORD-2024-88821) ได้รับความเสียหายระหว่างการขนส่ง และจะดำเนินการแก้ไขโดยเร็วที่สุด
+
+ทีมงานจะ<strong>ติดต่อกลับภายใน 2 วันทำการ</strong> เพื่อประสานการเปลี่ยนสินค้าหรือคืนเงินตามที่ท่านสะดวก
+
+ขอแสดงความนับถือ
+ทีม Customer Service | CPF (CP Foods)</div>
+    </div>
+
+    <!-- how to use in Gmail node -->
+    <div style="background:#F0FFF4;border:1px solid #86EFAC;border-radius:10px;padding:14px 16px;margin-bottom:0">
+      <div style="font-size:12px;font-weight:700;color:#1B7A3E;margin-bottom:8px">📤 นำ Output ไปใช้ใน Gmail Node (Step C)</div>
+      <div style="font-family:monospace;font-size:12px;line-height:2;color:#1A2332">
+        <div><span style="color:#6D28D9;font-weight:600">To:</span> <code style="background:#E0F2FE;padding:1px 6px;border-radius:3px">{{ $('Gmail Trigger').item.json.from }}</code></div>
+        <div><span style="color:#6D28D9;font-weight:600">Subject:</span> <code style="background:#E0F2FE;padding:1px 6px;border-radius:3px">Re: {{ $('Gmail Trigger').item.json.subject }}</code></div>
+        <div><span style="color:#6D28D9;font-weight:600">Body (ถ้าใช้ Step B รวม):</span> <code style="background:#C8E6C9;padding:1px 6px;border-radius:3px;font-weight:600">{{ $json.auto_reply_th }}</code></div><div style="margin-top:4px"><span style="color:#6D28D9;font-weight:600">Body (ถ้าใช้ Step B3):</span> <code style="background:#E0F2FE;padding:1px 6px;border-radius:3px">{{ $json.candidates[0].content.parts[0].text }}</code></div>
+      </div>
+      <div style="font-size:11px;color:#5A6B7E;margin-top:8px">💡 ปรับ expression ตาม LLM node ที่ใช้: Gemini ใช้ <code>candidates[0]...</code> | OpenAI ใช้ <code>choices[0].message.content</code> | Claude ใช้ <code>message.content[0].text</code></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showReply(t){
+  ['ru','rm','rl'].forEach(function(k){
+    var el=document.getElementById('reply-'+k);
+    var tb=document.getElementById('rtab-'+k);
+    if(!el||!tb)return;
+    var col={ru:'#C0392B',rm:'#B45309',rl:'#1B7A3E'};
+    if(k===t){el.style.display='block';tb.style.background=col[k];tb.style.color='#fff';}
+    else{el.style.display='none';tb.style.background='#fff';tb.style.color=col[k];}
+  });
+}
+</script>
+
+<div class="step"><div class="step-header"><div class="step-num" style="background:#6D28D9">C</div><div class="step-info"><div class="step-title">บันทึกลง Sheets + แจ้งเตือน</div><div class="step-sub"></div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span><strong>Google Sheets: Append Row</strong> → บันทึก Date, From, Type, Severity, Key Issue</span></li><li><span class="n" style="background:#0D2137">2</span><span><strong>IF Node</strong>: severity === 'urgent'</span></li><li><span class="n" style="background:#0D2137">3</span><span>True → <strong>LINE Notify</strong> แจ้ง CS Manager ทันที</span></li><li><span class="n" style="background:#0D2137">4</span><span>True → <strong>Gmail</strong> ส่ง auto-reply ให้ลูกค้า</span></li><li><span class="n" style="background:#0D2137">5</span><span>False → <strong>Gmail</strong> ส่ง reply มาตรฐาน</span></li></ul></div></div>
+</div><div id="wf3" class="tab-content" data-group="wf">
+<div class="wf-box"><div class="wf-title">📦 Workflow 3: Stock Alert Monitor — ทุก 6 ชั่วโมง</div><div class="wf-body" style="overflow-x:auto"><div style="font-size:11px;color:var(--muted);background:var(--gray50);border-radius:6px;padding:7px 12px;margin-bottom:12px;line-height:1.6">📋 ตรวจสต็อกวัตถุดิบทุก 6 ชั่วโมง → AI ระบุสิ่งที่ต้องสั่งซื้อ → แจ้ง Procurement</div><div style="display:flex;align-items:flex-start;flex-wrap:nowrap;min-width:fit-content"><div class="wf-node trigger" style="font-weight:600">⏰<br>Schedule<br>ทุก 6 ชม.</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node data" style="font-weight:600">📊<br>Sheets<br>สต็อก</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node cond" style="font-weight:600">🔀<br>Loop<br>Items</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div><div class="wf-node ai" style="font-weight:600">🤖<br>Gemini<br>Check</div><div style="margin-top:10px;padding-left:14px;border-left:2px solid #C4B5FD;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#C0392B;min-width:40px;text-align:right">ต่ำ</span><div class="wf-node notify" style="font-weight:600">⚠️ แจ้ง<br>Procurement</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#1B7A3E;min-width:40px;text-align:right">ปกติ</span><div class="wf-node action" style="font-weight:600">✅ Skip<br>(ปกติ)</div></div></div></div></div></div></div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#0F766E">A</div><div class="step-info"><div class="step-title">Schedule ทุก 6 ชั่วโมง</div><div class="step-sub"></div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span>Schedule Trigger → Cron: <code>0 */6 * * *</code></span></li><li><span class="n" style="background:#0D2137">2</span><span>ดึงข้อมูลจาก Sheets: Stock_วัตถุดิบ</span></li><li><span class="n" style="background:#0D2137">3</span><span>Filter เฉพาะ rows ที่ status ≠ ปกติ</span></li></ul></div></div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#0F766E">B</div><div class="step-info"><div class="step-title">Gemini วิเคราะห์และแนะนำ</div><div class="step-sub"></div></div></div><div class="step-body"><div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Prompt: Stock Analysis</span><button class="copy-btn" onclick="copyPrompt('p4b_stock',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p4b_stock">วิเคราะห์สต็อกวัตถุดิบ CPF:
+
+{{ JSON.stringify($json) }}
+
+ระบุ:
+1. วัตถุดิบที่ต้องสั่งซื้อด่วน (ต่ำกว่า minimum)
+2. ปริมาณที่แนะนำสั่งซื้อ (คิดจาก minimum × 1.5)
+3. Priority: 🔴สั่งวันนี้ / 🟡ภายใน 3 วัน / 🟢ปกติ
+
+ตอบเป็น JSON array:
+[{"material": "...", "current": 0, "should_order": 0, "priority": "..."}]</pre></div></div></div>
+
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#0F766E">C</div>
+    <div class="step-info">
+      <div class="step-title">แจ้ง Procurement — เลือกช่องทางที่เหมาะสม</div>
+      <div class="step-sub">เปรียบเทียบ 4 วิธี + config สำเร็จรูป</div>
+    </div>
+  </div>
+  <div class="step-body">
+
+    <!-- Comparison cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+
+      <div style="border:2px solid #1B7A3E;border-radius:10px;padding:14px;background:#F0FFF4">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:20px">📧</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#1B7A3E">Gmail</div>
+            <div style="font-size:10px;background:#1B7A3E;color:#fff;padding:1px 7px;border-radius:10px;display:inline-block;margin-top:2px">⭐ แนะนำสำหรับ Workshop</div>
+          </div>
+        </div>
+        <ul style="font-size:12px;color:#166534;line-height:1.9;padding-left:14px">
+          <li>มี Node สำเร็จใน n8n</li>
+          <li>แนบไฟล์ / รายการสต็อก CSV ได้</li>
+          <li>มี record ย้อนหลัง</li>
+          <li>เหมาะกับ formal report</li>
+        </ul>
+      </div>
+
+      <div style="border:1px solid #86EFAC;border-radius:10px;padding:14px;background:#F8FAFC">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:20px">💬</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#0D2137">LINE Messaging API</div>
+            <div style="font-size:10px;background:#06C755;color:#fff;padding:1px 7px;border-radius:10px;display:inline-block;margin-top:2px">เหมาะ Production จริง</div>
+          </div>
+        </div>
+        <ul style="font-size:12px;color:#475569;line-height:1.9;padding-left:14px">
+          <li>Push notification ทันที</li>
+          <li>ส่งเข้า LINE Group Procurement</li>
+          <li>คนไทยเช็ค LINE ทุกวัน</li>
+          <li>ใช้ HTTP Request Node</li>
+        </ul>
+      </div>
+
+      <div style="border:1px solid #E2E8F0;border-radius:10px;padding:14px;background:#F8FAFC">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:20px">🔵</span>
+          <div><div style="font-size:13px;font-weight:700;color:#0D2137">Google Chat</div>
+          <div style="font-size:10px;color:#5A6B7E">ถ้าใช้ Google Workspace</div></div>
+        </div>
+        <ul style="font-size:12px;color:#475569;line-height:1.9;padding-left:14px">
+          <li>Incoming Webhook ง่ายมาก</li>
+          <li>ส่ง Card พร้อมปุ่ม Action ได้</li>
+          <li>ไม่ต้อง auth — แค่ webhook URL</li>
+        </ul>
+      </div>
+
+      <div style="border:1px solid #E2E8F0;border-radius:10px;padding:14px;background:#F8FAFC">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:20px">🟦</span>
+          <div><div style="font-size:13px;font-weight:700;color:#0D2137">Microsoft Teams</div>
+          <div style="font-size:10px;color:#5A6B7E">ถ้าใช้ Microsoft 365</div></div>
+        </div>
+        <ul style="font-size:12px;color:#475569;line-height:1.9;padding-left:14px">
+          <li>n8n มี Teams Node</li>
+          <li>ส่งเข้า channel Procurement</li>
+          <li>Adaptive Cards แบบ rich content</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Tab nav -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button onclick="showNotify('gmail')" id="ntab-gmail"
+        style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #1B7A3E;background:#1B7A3E;color:#fff;font-family:inherit">
+        ⭐ Gmail</button>
+      <button onclick="showNotify('line')" id="ntab-line"
+        style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #06C755;background:#fff;color:#06C755;font-family:inherit">
+        💬 LINE</button>
+      <button onclick="showNotify('gchat')" id="ntab-gchat"
+        style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #1A73E8;background:#fff;color:#1A73E8;font-family:inherit">
+        🔵 Google Chat</button>
+    </div>
+
+    <!-- ── Gmail ── -->
+    <div id="notify-gmail">
+      <ul class="inst-list">
+        <li><span class="n" style="background:#1B7A3E">1</span><span>เพิ่ม Node: <strong>Gmail</strong> → Operation: <strong>Send</strong></span></li>
+        <li><span class="n" style="background:#1B7A3E">2</span><span>To: <code>procurement@cpf.co.th</code> (หรือหลาย email คั่นด้วย comma)</span></li>
+        <li><span class="n" style="background:#1B7A3E">3</span><span>Subject และ Body ใช้ expression ด้านล่าง</span></li>
+      </ul>
+      <div class="prompt-box" style="border-color:#86EFAC;background:#F0FFF4">
+        <div class="prompt-head" style="background:#DCFCE7;border-color:#86EFAC">
+          <span class="prompt-label" style="color:#1B7A3E">Gmail Node — Subject + Body</span>
+          <button class="copy-btn" onclick="copyPrompt('gmail_proc',this)">⎘ คัดลอก</button>
+        </div>
+        <pre class="prompt-body" id="gmail_proc">Subject:
+⚠️ [CPF Stock Alert] สต็อกต่ำกว่าเกณฑ์ {{ $now.toFormat('dd/MM/yyyy HH:mm') }}
+
+Body (HTML เปิด isHtml: true):
+&lt;h2&gt;⚠️ แจ้งเตือนสต็อกวัตถุดิบ — CPF&lt;/h2&gt;
+&lt;p&gt;ระบบตรวจพบวัตถุดิบที่ต้องสั่งซื้อเพิ่ม ณ {{ $now.toFormat('dd/MM/yyyy HH:mm') }}&lt;/p&gt;
+
+&lt;table border="1" cellpadding="6" style="border-collapse:collapse;width:100%"&gt;
+  &lt;tr style="background:#fef3c7"&gt;
+    &lt;th&gt;วัตถุดิบ&lt;/th&gt;&lt;th&gt;สต็อกปัจจุบัน&lt;/th&gt;&lt;th&gt;ควรสั่งซื้อ&lt;/th&gt;&lt;th&gt;Priority&lt;/th&gt;
+  &lt;/tr&gt;
+  {{ $json.table_rows }}
+&lt;/table&gt;
+
+&lt;p&gt;⚡ กรุณาดำเนินการสั่งซื้อตาม priority ด้านบน&lt;/p&gt;
+&lt;p style="color:#888"&gt;— ระบบ Stock Monitor อัตโนมัติ CPF&lt;/p&gt;</pre>
+      </div>
+      <div style="background:#F0FFF4;border:1px solid #86EFAC;border-radius:8px;padding:12px 14px;font-size:12px;color:#1A2332">
+        <div style="font-weight:700;color:#1B7A3E;margin-bottom:6px">💡 สร้าง table_rows จาก JSON array</div>
+        <div style="font-size:12px;color:#475569;margin-bottom:8px">ก่อน Gmail Node เพิ่ม Code Node สร้าง HTML table rows จาก Gemini output:</div>
+        <div class="prompt-box" style="margin-bottom:0;border-color:#86EFAC;background:#fff">
+          <div class="prompt-head" style="background:#DCFCE7;border-color:#86EFAC">
+            <span class="prompt-label" style="color:#1B7A3E">Code Node — สร้าง HTML Table Rows</span>
+            <button class="copy-btn" onclick="copyPrompt('code_table',this)">⎘ คัดลอก</button>
+          </div>
+          <pre class="prompt-body" id="code_table">// parse JSON array จาก Gemini
+const items = JSON.parse(
+  $input.item.json.candidates[0].content.parts[0].text
+    .replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim()
+);
+
+// สร้าง HTML rows
+const rows = items
+  .filter(i => i.priority !== '🟢ปกติ')  // กรองเฉพาะที่ต้องแจ้ง
+  .map(i => `&lt;tr&gt;
+    &lt;td&gt;${i.material}&lt;/td&gt;
+    &lt;td style="text-align:center"&gt;${i.current}&lt;/td&gt;
+    &lt;td style="text-align:center;font-weight:bold"&gt;${i.should_order}&lt;/td&gt;
+    &lt;td style="text-align:center"&gt;${i.priority}&lt;/td&gt;
+  &lt;/tr&gt;`).join('');
+
+return { json: { table_rows: rows, count: items.length } };</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LINE ── -->
+    <div id="notify-line" style="display:none">
+      <div style="background:#F0FFF4;border-left:4px solid #06C755;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#166534;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start">
+        💬 <span><strong>LINE Messaging API</strong> — ส่งเข้า Group Procurement โดยตรง · ทำตาม 4 ขั้นตอนนี้ครั้งเดียว ใช้ได้ตลอด</span>
+      </div>
+
+      <!-- Flow overview -->
+      <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:18px;font-size:11px">
+        <div style="background:#06C755;color:#fff;padding:5px 10px;border-radius:6px;font-weight:700">① สร้าง Bot</div>
+        <div style="color:#94A3B8">→</div>
+        <div style="background:#06C755;color:#fff;padding:5px 10px;border-radius:6px;font-weight:700">② เชิญเข้า Group</div>
+        <div style="color:#94A3B8">→</div>
+        <div style="background:#C0392B;color:#fff;padding:5px 10px;border-radius:6px;font-weight:700">③ หา Group ID</div>
+        <div style="color:#94A3B8">→</div>
+        <div style="background:#2979C8;color:#fff;padding:5px 10px;border-radius:6px;font-weight:700">④ ตั้งค่า n8n</div>
+      </div>
+
+      <!-- ① สร้าง Bot -->
+      <div style="border:1px solid #E2E8F0;border-radius:10px;margin-bottom:12px;overflow:hidden">
+        <div style="background:#06C755;color:#fff;padding:9px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(255,255,255,.25);border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">1</span>
+          สร้าง LINE Bot — developers.line.biz
+        </div>
+        <div style="padding:14px 16px">
+          <ul class="inst-list">
+            <li><span class="n" style="background:#06C755">①</span><span>เปิด <strong>developers.line.biz</strong> → Login ด้วย LINE Account</span></li>
+            <li><span class="n" style="background:#06C755">②</span><span>กด <strong>Create a new provider</strong> → ตั้งชื่อ <code>CPF Automation</code> → Create</span></li>
+            <li><span class="n" style="background:#06C755">③</span><span>กด <strong>Create a Messaging API channel</strong> → กรอก Channel name: <code>CPF Stock Bot</code></span></li>
+            <li><span class="n" style="background:#06C755">④</span><span>Tab <strong>Messaging API</strong> → เลื่อนหา <em>Channel access token</em> → กด <strong>Issue</strong> → <strong>Copy token ไว้</strong></span></li>
+            <li><span class="n" style="background:#06C755">⑤</span><span>ในหน้าเดียวกัน ส่วน <em>LINE features</em> → เปิด <strong>"Allow bot to join group chats"</strong> → Enable</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ② เชิญเข้า Group -->
+      <div style="border:1px solid #E2E8F0;border-radius:10px;margin-bottom:12px;overflow:hidden">
+        <div style="background:#06C755;color:#fff;padding:9px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(255,255,255,.25);border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">2</span>
+          เชิญ Bot เข้า LINE Group (LINE App บนมือถือ)
+        </div>
+        <div style="padding:14px 16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#06C755;margin-bottom:8px">📱 กลุ่มที่มีอยู่แล้ว</div>
+              <ol style="font-size:12px;line-height:2.1;padding-left:16px;color:#1A2332">
+                <li>เปิดกลุ่ม Procurement ใน LINE</li>
+                <li>แตะ <strong>ชื่อกลุ่ม</strong> ที่ด้านบน</li>
+                <li>เลือก <strong>เชิญ</strong> (Invite)</li>
+                <li>ค้นหา Basic ID ของ Bot<br><span style="color:#5A6B7E;font-size:11px">หา Basic ID ได้ที่ LINE Developers Console → Basic settings → Basic ID เช่น <code>@cpfstockbot</code></span></li>
+                <li>กด <strong>เชิญ</strong></li>
+              </ol>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#1B7A3E;margin-bottom:8px">🆕 สร้างกลุ่มใหม่</div>
+              <ol style="font-size:12px;line-height:2.1;padding-left:16px;color:#1A2332">
+                <li>แตะไอคอน <strong>✏️</strong> (New Chat)</li>
+                <li>เลือก <strong>New Group</strong></li>
+                <li>ค้นหา <code>@BasicID</code> ของ Bot<br><span style="color:#5A6B7E;font-size:11px">เพิ่มสมาชิกทีม Procurement ด้วย</span></li>
+                <li>ตั้งชื่อกลุ่ม → <strong>Create</strong></li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ หา Group ID (ละเอียด) -->
+      <div style="border:2px solid #C0392B;border-radius:10px;margin-bottom:12px;overflow:hidden">
+        <div style="background:#C0392B;color:#fff;padding:9px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(255,255,255,.25);border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">3</span>
+          หา Group ID — ผ่าน Webhook Test ใน n8n
+        </div>
+        <div style="padding:14px 16px">
+
+          <!-- Step 3.1 -->
+          <div style="display:flex;gap:10px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #E2E8F0">
+            <div style="background:#C0392B;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px">1</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:#1A2332;margin-bottom:6px">สร้าง Webhook Node ใน n8n</div>
+              <ul style="font-size:12px;color:#475569;line-height:2;padding-left:14px">
+                <li>สร้าง Workflow ใหม่ (ไม่ใช่ workflow หลัก) → กด <strong>+</strong></li>
+                <li>ค้นหา <strong>Webhook</strong> → เพิ่ม Node</li>
+                <li>HTTP Method: <strong>POST</strong></li>
+                <li>Authentication: <strong>None</strong></li>
+                <li>กด <strong>"Listen for test event"</strong> (ปุ่มสีส้ม) → n8n จะรอรับ request</li>
+              </ul>
+              <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#B45309">
+                ⚠️ ต้องกด <strong>"Listen for test event"</strong> ก่อน — ถ้าไม่กด Webhook จะไม่รับ request
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3.2 -->
+          <div style="display:flex;gap:10px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #E2E8F0">
+            <div style="background:#C0392B;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px">2</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:#1A2332;margin-bottom:6px">Copy Webhook URL จาก n8n</div>
+              <ul style="font-size:12px;color:#475569;line-height:2;padding-left:14px">
+                <li>ใน Webhook Node จะเห็น URL ลักษณะ:</li>
+              </ul>
+              <div style="background:#0D1117;border-radius:6px;padding:10px 14px;font-family:monospace;font-size:12px;color:#3FB950;margin:6px 0">
+                https://<span style="color:#FFA657">your-n8n.app.n8n.cloud</span>/webhook-test/<span style="color:#79C0FF">xxxxxxxx-xxxx</span>
+              </div>
+              <div style="font-size:12px;color:#5A6B7E">Copy URL นี้ไว้ — จะนำไปใส่ใน LINE Console ขั้นต่อไป</div>
+            </div>
+          </div>
+
+          <!-- Step 3.3 -->
+          <div style="display:flex;gap:10px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #E2E8F0">
+            <div style="background:#C0392B;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px">3</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:#1A2332;margin-bottom:6px">ใส่ Webhook URL ใน LINE Developers Console</div>
+              <ul style="font-size:12px;color:#475569;line-height:2;padding-left:14px">
+                <li>กลับไป <strong>developers.line.biz</strong> → เลือก Channel ของ Bot</li>
+                <li>Tab <strong>Messaging API</strong> → หาส่วน <em>Webhook settings</em></li>
+                <li>กด <strong>Edit</strong> ข้าง Webhook URL → วาง URL จาก n8n</li>
+                <li>กด <strong>Update</strong> → แล้วกด <strong>Verify</strong></li>
+                <li>ถ้าขึ้น <span style="color:#1B7A3E;font-weight:700">Success</span> แสดงว่าเชื่อมถูกต้อง</li>
+                <li>เปิด toggle <strong>"Use webhook"</strong> → <strong>Enabled</strong></li>
+              </ul>
+              <div style="background:#EDFAF2;border:1px solid #86EFAC;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#1B7A3E">
+                ✅ ถ้า Verify ไม่ผ่าน — ตรวจสอบว่ากด "Listen for test event" ใน n8n แล้วหรือยัง
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3.4 -->
+          <div style="display:flex;gap:10px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #E2E8F0">
+            <div style="background:#C0392B;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px">4</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:#1A2332;margin-bottom:6px">ส่งข้อความทดสอบในกลุ่ม LINE</div>
+              <ul style="font-size:12px;color:#475569;line-height:2;padding-left:14px">
+                <li>เปิด LINE App → ไปที่กลุ่ม Procurement ที่เชิญ Bot ไว้</li>
+                <li>พิมพ์ข้อความอะไรก็ได้ เช่น <code style="background:#F1F5F9;padding:1px 5px;border-radius:3px">test groupid</code> → ส่ง</li>
+                <li>LINE จะส่ง event ไปยัง Webhook URL ที่ตั้งไว้</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Step 3.5 -->
+          <div style="display:flex;gap:10px">
+            <div style="background:#C0392B;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px">5</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:#1A2332;margin-bottom:6px">ดู payload ใน n8n → Copy groupId</div>
+              <ul style="font-size:12px;color:#475569;line-height:2;padding-left:14px">
+                <li>กลับ n8n — Webhook Node จะแสดง <span style="color:#1B7A3E;font-weight:700">Input data received</span></li>
+                <li>คลิกที่ Webhook Node → ดู <strong>Output</strong> ด้านขวา</li>
+                <li>กด <strong>JSON</strong> tab → หา path <code>body.events[0].source.groupId</code></li>
+              </ul>
+              <div style="background:#0D1117;border-radius:8px;padding:14px 16px;font-family:monospace;font-size:12px;color:#C9D1D9;line-height:1.9;margin:10px 0">
+<span style="color:#79C0FF">{</span>
+  "body": {
+    "events": [{
+      "type": <span style="color:#A5D6FF">"message"</span>,
+      "source": {
+        "type": <span style="color:#A5D6FF">"group"</span>,
+        <span style="color:#7EE787;font-weight:700">"groupId"</span>: <span style="color:#FF7B72;font-weight:700">"C4af4980629abc123..."</span>,  <span style="color:#3FB950">← Copy ค่านี้</span>
+        "userId": "Uxxxxxxxx"
+      },
+      "message": {
+        "type": "text",
+        "text": <span style="color:#A5D6FF">"test groupid"</span>
+      }
+    }]
+  }
+<span style="color:#79C0FF">}</span></div>
+              <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:10px 14px;font-size:12px;color:#1A2332">
+                <div style="display:flex;gap:8px">
+                  <span>📌</span>
+                  <div>
+                    <strong>Group ID ขึ้นต้นด้วย <code style="background:#FEF3C7">C</code></strong> เสมอ (เช่น <code>C4af4980629...</code>)<br>
+                    User ID ขึ้นต้นด้วย <code>U</code> — อย่าเอา User ID ไปใช้แทน Group ID<br>
+                    เก็บ Group ID ไว้ใส่ใน <strong>n8n Credential</strong> หรือ Environment Variable
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ④ ตั้งค่า n8n HTTP Request -->
+      <div style="border:1px solid #E2E8F0;border-radius:10px;margin-bottom:12px;overflow:hidden">
+        <div style="background:#2979C8;color:#fff;padding:9px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(255,255,255,.25);border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">4</span>
+          ตั้งค่า HTTP Request Node ใน n8n (Workflow หลัก)
+        </div>
+        <div style="padding:14px 16px">
+          <div class="prompt-box" style="margin-bottom:10px">
+            <div class="prompt-head">
+              <span class="prompt-label">📋 HTTP Request — LINE Messaging API</span>
+              <button class="copy-btn" onclick="copyPrompt('line_msg',this)">⎘ คัดลอก</button>
+            </div>
+            <pre class="prompt-body" id="line_msg">Method : POST
+URL    : https://api.line.me/v2/bot/message/push
+
+Headers:
+  Authorization : Bearer {CHANNEL_ACCESS_TOKEN}
+  Content-Type  : application/json
+
+Body (JSON):
+{
+  "to": "C4af4980629abc123...",
+  "messages": [{
+    "type": "text",
+    "text": "⚠️ CPF Stock Alert {{ $now.toFormat('dd/MM HH:mm') }}
+
+สต็อกต่ำกว่าเกณฑ์:
+{{ $json.summary_text }}
+
+📋 รายละเอียดส่งทาง Email แล้ว"
+  }]
+}</pre>
+          </div>
+          <div style="background:#F0FFF4;border:1px solid #86EFAC;border-radius:8px;padding:10px 14px;font-size:12px;color:#1A2332">
+            <strong style="color:#06C755">💡 Best Practice:</strong> ใช้ LINE แจ้งสั้นๆ + Gmail ส่งรายงานละเอียด — Procurement เห็น LINE ก่อน แล้วเปิด Email ดูตารางสต็อก
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Google Chat ── -->
+    <div id="notify-gchat" style="display:none">
+      <div style="background:#EFF6FF;border-left:4px solid #1A73E8;border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:#1A4A7A;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start">
+        🔵 <span><strong>Google Chat Webhook</strong> — ง่ายที่สุดในกลุ่ม Google Workspace · ไม่ต้อง auth ใดๆ แค่ webhook URL จาก Chat space</span>
+      </div>
+      <ul class="inst-list">
+        <li><span class="n" style="background:#1A73E8">1</span><span>ใน Google Chat → Procurement Space → <strong>Apps & integrations → Webhooks → Add</strong></span></li>
+        <li><span class="n" style="background:#1A73E8">2</span><span>Copy <strong>Webhook URL</strong> มาใส่ใน n8n</span></li>
+        <li><span class="n" style="background:#1A73E8">3</span><span>เพิ่ม Node: <strong>HTTP Request</strong> → POST ไปยัง Webhook URL</span></li>
+      </ul>
+      <div class="prompt-box" style="border-color:#A0BBE8;background:#EFF6FF">
+        <div class="prompt-head" style="background:#DBEAFE;border-color:#A0BBE8">
+          <span class="prompt-label" style="color:#1A73E8">HTTP Request — Google Chat Webhook</span>
+          <button class="copy-btn" onclick="copyPrompt('gchat_msg',this)">⎘ คัดลอก</button>
+        </div>
+        <pre class="prompt-body" id="gchat_msg">Method : POST
+URL    : {WEBHOOK_URL_จาก_GOOGLE_CHAT}
+
+Body (JSON):
+{
+  "cards": [{
+    "header": {
+      "title": "⚠️ CPF Stock Alert",
+      "subtitle": "{{ $now.toFormat('dd/MM/yyyy HH:mm') }}",
+      "imageUrl": "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/warning/default/24px.svg"
+    },
+    "sections": [{
+      "widgets": [{
+        "textParagraph": {
+          "text": "🔴 <b>สต็อกต่ำกว่าเกณฑ์</b> {{ $json.count }} รายการ<br>{{ $json.summary_text }}"
+        }
+      }, {
+        "buttons": [{
+          "textButton": {
+            "text": "📊 ดู Google Sheets",
+            "onClick": { "openLink": { "url": "https://sheets.google.com/..." } }
+          }
+        }]
+      }]
+    }]
+  }]
+}</pre>
+      </div>
+    </div>
+
+    <script>
+    function showNotify(t){
+      ['gmail','line','gchat'].forEach(function(k){
+        var el=document.getElementById('notify-'+k);
+        var tb=document.getElementById('ntab-'+k);
+        if(!el||!tb)return;
+        var col={gmail:'#1B7A3E',line:'#06C755',gchat:'#1A73E8'};
+        if(k===t){el.style.display='block';tb.style.background=col[k];tb.style.color='#fff';}
+        else{el.style.display='none';tb.style.background='#fff';tb.style.color=col[k];}
+      });
+    }
+    </script>
+
+  </div>
+</div>
+</div><div id="wf4" class="tab-content" data-group="wf">
+<div class="wf-box"><div class="wf-title">📝 Workflow 4: Daily Summary Report — เช้าทุกวัน</div><div class="wf-body" style="overflow-x:auto"><div style="font-size:11px;color:var(--muted);background:var(--gray50);border-radius:6px;padding:7px 12px;margin-bottom:12px;line-height:1.6">📋 ทุกเช้า 08:00 → รวบรวมข้อมูลเมื่อวาน → AI สรุป → ส่งรายงานให้ผู้จัดการ</div><div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px"><div class="wf-node trigger" style="font-weight:600">⏰<br>Schedule<br>08:00</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node data" style="font-weight:600">📊<br>Sheets<br>ดึงข้อมูล</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node ai" style="font-weight:600">🤖<br>Claude<br>สรุป</div><div class="wf-arrow" style="display:flex;align-items:center;padding:0 6px;font-size:20px;color:#94A3B8;flex-shrink:0">→</div><div class="wf-node action" style="font-weight:600">📧<br>Gmail<br>ส่ง Report</div></div></div></div>
+<div class="step"><div class="step-header"><div class="step-num" style="background:#D35400">A</div><div class="step-info"><div class="step-title">Workflow ครบทุกขั้นตอน</div><div class="step-sub"></div></div></div><div class="step-body"><ul class="inst-list"><li><span class="n" style="background:#0D2137">1</span><span><strong>Schedule</strong>: ทุกวัน 08:00 (<code>0 8 * * 1-5</code>)</span></li><li><span class="n" style="background:#0D2137">2</span><span><strong>Sheets</strong>: ดึง QC Report เมื่อวาน</span></li><li><span class="n" style="background:#0D2137">3</span><span><strong>Sheets</strong>: ดึง Complaint Log เมื่อวาน</span></li><li><span class="n" style="background:#0D2137">4</span><span><strong>Merge</strong>: รวมข้อมูลทั้งสอง</span></li><li><span class="n" style="background:#0D2137">5</span><span><strong>Claude</strong>: สร้าง Executive Summary</span></li><li><span class="n" style="background:#0D2137">6</span><span><strong>Gmail</strong>: ส่งให้ QC Manager + Production Manager</span></li></ul></div></div>
+<div class="prompt-box"><div class="prompt-head"><span class="prompt-label">📋 Prompt: Daily Executive Summary</span><button class="copy-btn" onclick="copyPrompt('p4b_daily',this)">⎘ คัดลอก</button></div><pre class="prompt-body" id="p4b_daily">สร้าง Daily Summary Report สำหรับผู้จัดการ CPF:
+
+QC Data เมื่อวาน:
+{{ JSON.stringify($('Google Sheets QC').all()) }}
+
+Complaints เมื่อวาน:
+{{ JSON.stringify($('Google Sheets Complaint').all()) }}
+
+รูปแบบ Email:
+Subject: [CPF Daily Report] {{ $now.minus({days:1}).toFormat('dd/MM/yyyy') }}
+
+เนื้อหา:
+1. สรุป QC: ผ่าน X/Y LOT ปัญหาหลัก
+2. Complaint: รับ X รายการ เร่งด่วน X รายการ
+3. ประเด็นที่ต้องติดตาม (top 3)
+4. Action Items วันนี้
+
+ภาษาไทย กระชับ เหมาะผู้บริหาร</pre></div>
+</div>
+  <div class="nav-footer"><a href="module4.html" class="nav-btn">← Module 04: Dify</a><a href="module5.html" class="nav-btn primary">Module 05: n8n Local →</a></div>
+</main>
+
+<script>
+function copyPrompt(id,btn){
+  var t=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(function(){
+    var o=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';
+    btn.style.background='#1B7A3E';btn.style.color='#fff';
+    setTimeout(function(){btn.textContent=o;btn.style.background='';btn.style.color='';},2000);
+  }).catch(function(){btn.textContent='(เลือกด้วยมือ)';});
+}
+var path=window.location.pathname.split('/').pop();
+document.querySelectorAll('.sidebar a').forEach(function(a){
+  if(a.getAttribute('href')===path)a.classList.add('active');
+});
+function showTab(group,id){
+  document.querySelectorAll('.tab-content[data-group="'+group+'"]').forEach(function(el){el.classList.remove('on');});
+  document.querySelectorAll('.tab-btn[data-group="'+group+'"]').forEach(function(el){el.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+  document.querySelector('.tab-btn[data-target="'+id+'"]').classList.add('on');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Multi-Agent Workflows สำหรับ CPF — CPF AI Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --navy:#0D2137;--blue:#1A4A7A;--sky:#2979C8;
+  --accent:#E85D04;--acl:#FFF3EC;
+  --green:#1B7A3E;--gcl:#EDFAF2;
+  --red:#C0392B;--rcl:#FEF0EE;
+  --amber:#B45309;--acl2:#FFFBEB;
+  --orange:#D35400;--ocl:#FEF3EC;
+  --purple:#6D28D9;--pcl:#F5F3FF;
+  --teal:#0F766E;--tcl:#F0FDFA;
+  --gray50:#F8FAFC;--gray100:#F1F5F9;--gray200:#E2E8F0;
+  --gray400:#94A3B8;--gray600:#475569;--gray800:#1E293B;
+  --text:#1A2332;--muted:#5A6B7E;--sidebar:220px;
+  --font:'Sarabun',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--text);background:#fff;
+     display:flex;min-height:100vh;font-size:15px;line-height:1.7}
+.sidebar{width:var(--sidebar);background:var(--navy);position:fixed;
+  top:0;left:0;height:100vh;overflow-y:auto;flex-shrink:0;z-index:100}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo .brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.sidebar-section{padding:10px 0 4px 18px;font-size:10px;color:rgba(255,255,255,.35);
+  text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:8px 18px;
+  font-size:13px;color:rgba(255,255,255,.65);text-decoration:none;
+  border-left:3px solid transparent;transition:all .15s}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sidebar a.active{color:#fff;background:rgba(41,121,200,.25);border-left-color:var(--sky)}
+.sidebar a .mn{font-size:10px;background:rgba(255,255,255,.12);
+  border-radius:4px;padding:1px 6px;font-family:var(--mono)}
+.main{margin-left:var(--sidebar);flex:1;max-width:820px;padding:40px 48px 80px}
+.page-header{border-bottom:2px solid var(--navy);padding-bottom:20px;margin-bottom:36px}
+.module-num{font-size:11px;font-weight:600;color:var(--sky);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:6px}
+.page-title{font-size:30px;font-weight:700;color:var(--navy);line-height:1.2}
+.page-desc{font-size:15px;color:var(--muted);margin-top:8px;line-height:1.6}
+.meta-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+  border-radius:20px;font-size:12px;font-weight:500;border:1px solid}
+.section-title{font-size:18px;font-weight:700;color:var(--navy);
+  margin:36px 0 18px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gray200)}
+.step{background:#fff;border:1px solid var(--gray200);border-radius:12px;
+  margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.step:hover{border-color:var(--sky)}
+.step-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--sky);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.step-info{flex:1}
+.step-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.step-sub{font-size:13px;color:var(--muted)}
+.step-body{padding:0 20px 18px 66px}
+.inst-list{background:var(--gray50);border-radius:8px;padding:14px 16px;
+  list-style:none;margin-bottom:14px}
+.inst-list li{display:flex;gap:10px;padding:5px 0;font-size:13px;
+  border-bottom:1px solid var(--gray200)}
+.inst-list li:last-child{border-bottom:none;padding-bottom:0}
+.inst-list li .n{min-width:20px;height:20px;border-radius:50%;
+  background:var(--navy);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.prompt-box{border:1px solid #C7D9F5;border-radius:10px;background:#F0F6FF;
+  margin-bottom:14px;overflow:hidden}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:#E3EEFF;border-bottom:1px solid #C7D9F5}
+.prompt-label{font-size:10px;font-weight:700;color:var(--sky);
+  text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;
+  border:1px solid #A0BBE8;background:#fff;color:var(--sky);font-weight:500;
+  font-family:var(--font)}
+.copy-btn:hover{background:var(--sky);color:#fff}
+.prompt-body{padding:14px 16px;font-size:12px;line-height:1.8;
+  white-space:pre-wrap;font-family:var(--mono);color:var(--gray800)}
+.screen-box{background:#0D1117;border-radius:10px;margin-bottom:14px;overflow:hidden}
+.screen-head{background:#21262D;padding:8px 14px;display:flex;align-items:center;gap:6px}
+.dot-r{width:10px;height:10px;border-radius:50%;background:#FF5F57}
+.dot-y{width:10px;height:10px;border-radius:50%;background:#FFBD2E}
+.dot-g{width:10px;height:10px;border-radius:50%;background:#28CA41}
+.screen-lbl{font-size:11px;color:#8B949E;margin-left:6px;font-family:var(--mono)}
+.screen-body{padding:16px 18px;font-size:12px;color:#C9D1D9;
+  font-family:var(--mono);line-height:1.8;white-space:pre}
+.tip{background:var(--acl2);border-left:4px solid var(--accent);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--amber);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.note{background:var(--gcl);border-left:4px solid var(--green);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--green);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.warn{background:var(--rcl);border-left:4px solid var(--red);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--red);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.info-box{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px}
+.info-box h4{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px}
+.output-box{border-left:3px solid var(--green);border-radius:0 8px 8px 0;
+  background:var(--gcl);padding:14px 16px;margin-bottom:14px}
+.output-label{font-size:10px;font-weight:700;color:var(--green);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.output-body{font-size:12px;line-height:1.8;white-space:pre-wrap;
+  color:var(--gray800);font-family:var(--mono)}
+.chat-demo{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px;margin-bottom:14px}
+.chat-u{background:var(--sky);color:#fff;border-radius:12px 12px 3px 12px;
+  padding:8px 12px;font-size:13px;max-width:70%;margin-left:auto;
+  margin-bottom:8px;line-height:1.6}
+.chat-ai{background:#fff;border:1px solid var(--gray200);
+  border-radius:12px 12px 12px 3px;padding:8px 12px;font-size:13px;
+  max-width:85%;margin-bottom:8px;line-height:1.6}
+.chat-name{font-size:10px;color:var(--gray400);margin-bottom:3px}
+.badge{display:inline-block;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600}
+.wf-box{border:1px solid var(--gray200);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.wf-title{background:var(--navy);color:#fff;padding:10px 16px;
+  font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.wf-body{padding:14px 16px}
+.wf-row{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-bottom:6px}
+.wf-node{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:8px;padding:6px 12px;font-size:12px;text-align:center;min-width:120px}
+.wf-arrow{color:var(--gray400);font-size:18px;padding:0 6px;flex-shrink:0}
+.wf-node.trigger{background:#E3EEFF;border-color:#A0BBE8;color:var(--blue)}
+.wf-node.ai{background:#F5F3FF;border-color:#C4B5FD;color:var(--purple)}
+.wf-node.action{background:#EDFAF2;border-color:#86EFAC;color:var(--green)}
+.wf-node.cond{background:#FFFBEB;border-color:#FCD34D;color:var(--amber)}
+.wf-node.data{background:#F0FDFA;border-color:#5EEAD4;color:var(--teal)}
+.wf-node.notify{background:#FFF3EC;border-color:#FCA85E;color:var(--orange)}
+@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative}
+  .main{margin-left:0;padding:24px 20px 60px}body{flex-direction:column}}
+.nav-footer{display:flex;justify-content:space-between;
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--gray200)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+  border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;
+  border:1px solid var(--gray200);color:var(--navy);transition:all .15s}
+.nav-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav-btn.primary{background:var(--sky);color:#fff;border-color:var(--sky)}
+.nav-btn.primary:hover{background:var(--navy)}
+.llm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.llm-card{border:1px solid var(--gray200);border-radius:10px;padding:14px;text-align:center}
+.llm-logo{font-size:28px;margin-bottom:6px}
+.llm-name{font-size:13px;font-weight:600;color:var(--navy)}
+.llm-note{font-size:11px;color:var(--muted);margin-top:2px}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--gray200);padding-bottom:-2px}
+.tab-btn{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;
+  border:none;background:none;color:var(--muted);border-bottom:2px solid transparent;
+  margin-bottom:-2px;font-family:var(--font);transition:all .15s}
+.tab-btn.on{color:var(--sky);border-bottom-color:var(--sky)}
+.tab-content{display:none}.tab-content.on{display:block}
+</style>
+</head>
+<body>
+<nav class="sidebar"><div class="sidebar-logo"><div class="brand">🐔 CPF AI Workshop</div><div class="sub">คู่มือประกอบการสอน 2569</div></div><div class="sidebar-section">Modules</div><a href="index.html"><span class="mn">🏠</span>ภาพรวม Workshop</a><a href="module1.html"><span class="mn">01</span>AI Agent คืออะไร + MCP</a><a href="module2.html"><span class="mn">02</span>Claude.ai — เริ่มต้น</a><a href="module3.html"><span class="mn">03</span>Workshop Labs</a><a href="module4.html"><span class="mn">04</span>Dify — Chatbot Builder</a><a href="module4b.html"><span class="mn">04B</span>n8n Cloud + LLM</a><a href="module5.html"><span class="mn">05</span>n8n — Local Install</a><a href="module-multiagent.html"><span class="mn">05B</span>Multi-Agent Workflows</a><a href="module-stitch.html"><span class="mn">05C</span>Stitch + Antigravity 🆕</a><a href="module-claudecode.html"><span class="mn">05D</span>Claude Code</a><a href="module-claudecode-project.html"><span class="mn">05E</span>Full Stack Project 🆕</a><a href="module6.html"><span class="mn">06</span>MCP Protocol</a><a href="module7.html"><span class="mn">07</span>Capstone Project</a></nav>
+<main class="main">
+  <header class="page-header">
+    <div class="module-num">MODULE 05B &nbsp;·&nbsp; 60 นาที</div>
+    <h1 class="page-title">Multi-Agent Workflows</h1>
+    <p class="page-desc">ให้ AI หลายตัวทำงานร่วมกัน แต่ละตัวเชี่ยวชาญเฉพาะด้าน — สร้างด้วย n8n + Claude ทีละ step</p>
+    <div class="meta-pills">
+      <span class="pill" style="background:#41299115;border-color:#41299140;color:#412991">Multi-Agent</span>
+      <span class="pill" style="background:#0891B215;border-color:#0891B240;color:#0891B2">n8n</span>
+      <span class="pill" style="background:#D9770615;border-color:#D9770640;color:#D97706">Claude API</span>
+      <span class="pill" style="background:#5A6B7E15;border-color:#5A6B7E40;color:#5A6B7E">60 นาที</span>
+    </div>
+  </header>
+
+  <!-- Concept -->
+  <div style="background:linear-gradient(135deg,#0D2137,#1A4A7A);border-radius:12px;padding:20px 24px;margin-bottom:24px;color:#fff">
+    <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">แนวคิดหลัก</div>
+    <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:16px;font-weight:700;margin-bottom:6px">❌ Single Agent ทำทุกอย่าง</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.7">prompt ยาว ผลลัพธ์กว้างเกินไป ตรวจสอบยาก ถ้าพลาดจุดหนึ่งทุกอย่างพัง</div>
+      </div>
+      <div style="font-size:24px;color:rgba(255,255,255,.3);align-self:center">→</div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:16px;font-weight:700;margin-bottom:6px">✅ Multi-Agent แบ่งงาน</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.7">แต่ละ Agent มี role ชัด ตรวจสอบได้ทีละขั้น output Agent ก่อน = input Agent หลัง</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 workflows overview -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px">
+    <div style="border:2px solid #1A4A7A;border-radius:10px;padding:14px">
+      <div style="font-size:11px;font-weight:700;color:#2979C8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Workflow 1 — Sequential</div>
+      <div style="font-size:14px;font-weight:700;color:#0D2137;margin-bottom:4px">🔬 QC Fail Investigation</div>
+      <div style="font-size:12px;color:#5A6B7E;line-height:1.7">LOT ไม่ผ่าน → 3 Agents วิเคราะห์ต่อกัน → รายงาน + แผนแก้ไข</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <span style="background:#E3EEFF;color:#1A4A7A;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">3 Agents</span>
+        <span style="background:#F0FDFA;color:#0F766E;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">Sequential</span>
+        <span style="background:#FFFBEB;color:#B45309;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">~30 วินาที</span>
+      </div>
+    </div>
+    <div style="border:2px solid #6D28D9;border-radius:10px;padding:14px">
+      <div style="font-size:11px;font-weight:700;color:#6D28D9;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Workflow 2 — Parallel → Merge</div>
+      <div style="font-size:14px;font-weight:700;color:#0D2137;margin-bottom:4px">📧 Complaint Auto-Handler</div>
+      <div style="font-size:12px;color:#5A6B7E;line-height:1.7">Complaint เข้า → 2 Agents ตรวจสอบพร้อมกัน → Agent 3 ร่าง Reply</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <span style="background:#F5F3FF;color:#6D28D9;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">3 Agents</span>
+        <span style="background:#FFF3EC;color:#D35400;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">Parallel+Merge</span>
+        <span style="background:#FFFBEB;color:#B45309;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">~25 วินาที</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- WORKFLOW 1 -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2 class="section-title">Workflow 1 — QC Fail Investigation (3 Sequential Agents)</h2>
+
+  <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px">
+    <strong>🎯 โจทย์:</strong> เมื่อ LOT QC ไม่ผ่าน → Agent 1 ดึงข้อมูล → Agent 2 วิเคราะห์หาสาเหตุ → Agent 3 สร้างรายงาน + แผนแก้ไข ส่ง Email ผู้จัดการ
+  </div>
+
+  <!-- Flow diagram -->
+  <div style="border:1px solid #1A4A7A40;border-radius:10px;overflow:hidden;margin-bottom:20px">
+    <div style="background:#1A4A7A;color:#fff;padding:10px 16px;font-size:13px;font-weight:600">🔗 Sequential Flow — output ของแต่ละ Agent เป็น input ของตัวถัดไป</div>
+    <div style="padding:16px;overflow-x:auto">
+      <div style="display:flex;align-items:flex-start;gap:0;min-width:520px">
+        <!-- Trigger -->
+        <div style="text-align:center;flex:1">
+          <div style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:8px;padding:10px 8px;font-size:12px;font-weight:600;color:#B45309">🔔 Trigger<br><span style="font-weight:400;font-size:11px">Sheets webhook<br>LOT ไม่ผ่าน</span></div>
+        </div>
+        <div style="display:flex;align-items:center;padding:0 4px;margin-top:18px;color:#94A3B8;font-size:18px">→</div>
+        <!-- Agent 1 -->
+        <div style="text-align:center;flex:1">
+          <div style="background:#E3EEFF;border:2px solid #2979C8;border-radius:8px;padding:10px 8px;font-size:12px;font-weight:700;color:#1A4A7A">🔍 Agent 1<br>Data Collector<br><span style="font-weight:400;font-size:11px">ดึงข้อมูล LOT<br>จาก Sheets</span></div>
+          <div style="font-size:10px;color:#94A3B8;margin-top:4px">Claude API</div>
+        </div>
+        <div style="display:flex;align-items:center;padding:0 4px;margin-top:18px;color:#94A3B8;font-size:18px">→</div>
+        <!-- Agent 2 -->
+        <div style="text-align:center;flex:1">
+          <div style="background:#F5F3FF;border:2px solid #6D28D9;border-radius:8px;padding:10px 8px;font-size:12px;font-weight:700;color:#6D28D9">🧪 Agent 2<br>QC Analyzer<br><span style="font-weight:400;font-size:11px">วิเคราะห์ 5-Why<br>หาสาเหตุรากเหง้า</span></div>
+          <div style="font-size:10px;color:#94A3B8;margin-top:4px">Claude API</div>
+        </div>
+        <div style="display:flex;align-items:center;padding:0 4px;margin-top:18px;color:#94A3B8;font-size:18px">→</div>
+        <!-- Agent 3 -->
+        <div style="text-align:center;flex:1">
+          <div style="background:#EDFAF2;border:2px solid #1B7A3E;border-radius:8px;padding:10px 8px;font-size:12px;font-weight:700;color:#1B7A3E">📋 Agent 3<br>Report Writer<br><span style="font-weight:400;font-size:11px">รายงาน + Action Plan<br>ส่ง Email</span></div>
+          <div style="font-size:10px;color:#94A3B8;margin-top:4px">Claude API</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step by step build -->
+  <div style="font-size:15px;font-weight:700;color:#0D2137;margin-bottom:14px">📐 สร้างใน n8n — Step by Step</div>
+
+  <!-- Step 1: Trigger -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#B45309">S1</div>
+      <div class="step-info">
+        <div class="step-title">Trigger — รับสัญญาณ LOT ไม่ผ่าน</div>
+        <div class="step-sub">เริ่ม Workflow เมื่อมี QC Alert เข้ามา</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="inst-list">
+        <li><span class="n">1</span><span>สร้าง Workflow ใหม่ใน n8n → กด <strong>+</strong> เพิ่ม Node แรก</span></li>
+        <li><span class="n">2</span><span>ค้นหา <strong>Webhook</strong> → เลือก Webhook Node</span></li>
+        <li><span class="n">3</span><span>HTTP Method: <strong>POST</strong> | Path: <code>qc-alert</code></span></li>
+        <li><span class="n">4</span><span>กด <strong>Listen for test event</strong> แล้วส่ง test payload ด้านล่างเพื่อทดสอบ</span></li>
+      </ul>
+      <div class="prompt-box">
+        <div class="prompt-head"><span class="prompt-label">📋 Test Payload — ส่งผ่าน Postman หรือ curl</span><button class="copy-btn" onclick="copyPrompt('wf1_trigger',this)">⎘ คัดลอก</button></div>
+        <pre class="prompt-body" id="wf1_trigger">{
+  "lot_id": "CP-240524-009",
+  "plant": "โรงงาน A",
+  "line": "Line 3",
+  "product": "ไก่ทอดแช่แข็ง CP 500g",
+  "fail_metrics": "ความชื้น 68% (เกณฑ์ 65%), Bacteria count 1200 CFU (เกณฑ์ 1000)",
+  "date": "2025-05-24"
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Agent 1 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#2979C8">A1</div>
+      <div class="step-info">
+        <div class="step-title">Agent 1 — Data Collector (HTTP Request → Claude)</div>
+        <div class="step-sub">รับข้อมูลจาก Trigger แล้วให้ Claude สรุปข้อมูล LOT อย่างเป็นระบบ</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="inst-list">
+        <li><span class="n">1</span><span>กด <strong>+</strong> เพิ่ม Node → ค้นหา <strong>HTTP Request</strong></span></li>
+        <li><span class="n">2</span><span>Method: <strong>POST</strong> | URL: <code>https://api.anthropic.com/v1/messages</code></span></li>
+        <li><span class="n">3</span><span>Headers: <code>x-api-key</code> = Anthropic API Key, <code>anthropic-version</code> = <code>2023-06-01</code>, <code>content-type</code> = <code>application/json</code></span></li>
+        <li><span class="n">4</span><span>Body: <strong>JSON</strong> → วาง Body ด้านล่าง (ใช้ n8n expression ดึงค่าจาก Trigger)</span></li>
+      </ul>
+      <div class="prompt-box">
+        <div class="prompt-head"><span class="prompt-label">📋 Body JSON — Agent 1 (Claude API)</span><button class="copy-btn" onclick="copyPrompt('wf1_a1_body',this)">⎘ คัดลอก</button></div>
+        <pre class="prompt-body" id="wf1_a1_body">{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 1000,
+  "messages": [{
+    "role": "user",
+    "content": "คุณเป็น Data Collector Agent ของ CPF\nรวบรวมและจัดระเบียบข้อมูล QC Fail LOT ต่อไปนี้:\n\nLOT ID: {{ $json.body.lot_id }}\nโรงงาน: {{ $json.body.plant }}\nLine: {{ $json.body.line }}\nสินค้า: {{ $json.body.product }}\nเมตริกที่ไม่ผ่าน: {{ $json.body.fail_metrics }}\nวันที่: {{ $json.body.date }}\n\nตอบเป็น JSON:\n{\n  \"lot_id\": \"...\" ,\n  \"summary\": \"สรุปสถานการณ์ 2-3 ประโยค\",\n  \"fail_points\": [\"รายการที่ไม่ผ่านแต่ละข้อ\"],\n  \"severity\": \"critical|high|medium\"\n}"
+  }]
+}</pre>
+      </div>
+      <div class="tip">💡 <span>ตอนนี้ยังไม่ต้อง connect กัน — build ทีละ node แล้วทดสอบแต่ละตัวด้วย <strong>Test step</strong> ก่อน</span></div>
+    </div>
+  </div>
+
+  <!-- Step 3: Parse A1 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#475569">P1</div>
+      <div class="step-info">
+        <div class="step-title">Parse Output Agent 1 (Code Node)</div>
+        <div class="step-sub">แปลง string จาก Claude เป็น JSON object พร้อมส่งต่อ Agent 2</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="inst-list">
+        <li><span class="n">1</span><span>เพิ่ม Node: <strong>Code</strong> | Mode: <strong>Run Once for Each Item</strong></span></li>
+        <li><span class="n">2</span><span>วาง code ด้านล่าง</span></li>
+      </ul>
+      <div class="prompt-box">
+        <div class="prompt-head"><span class="prompt-label">⚙️ Code Node — Parse Claude Output</span><button class="copy-btn" onclick="copyPrompt('wf1_parse',this)">⎘ คัดลอก</button></div>
+        <pre class="prompt-body" id="wf1_parse">const raw = $input.item.json.content[0].text
+  .replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
+const agent1 = JSON.parse(raw);
+// ส่งต่อทั้ง agent1 output + ข้อมูล original
+return {
+  json: {
+    agent1_output: agent1,
+    original: $input.item.json   // เก็บ original response ไว้ด้วย
+  }
+};</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Agent 2 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#6D28D9">A2</div>
+      <div class="step-info">
+        <div class="step-title">Agent 2 — QC Analyzer (HTTP Request → Claude)</div>
+        <div class="step-sub">รับ output Agent 1 → วิเคราะห์หาสาเหตุด้วย 5-Why methodology</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="inst-list">
+        <li><span class="n">1</span><span>เพิ่ม HTTP Request Node (ตั้งค่า URL + Headers เหมือน Agent 1)</span></li>
+        <li><span class="n">2</span><span>Body: ใช้ <code>{{ $json.agent1_output }}</code> ดึงข้อมูลจาก Parse Node</span></li>
+      </ul>
+      <div class="prompt-box">
+        <div class="prompt-head"><span class="prompt-label">📋 Body JSON — Agent 2</span><button class="copy-btn" onclick="copyPrompt('wf1_a2_body',this)">⎘ คัดลอก</button></div>
+        <pre class="prompt-body" id="wf1_a2_body">{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 1200,
+  "messages": [{
+    "role": "user",
+    "content": "คุณเป็น QC Expert ของ CPF ผู้เชี่ยวชาญ Root Cause Analysis\n\nข้อมูล LOT จาก Data Collector:\n{{ JSON.stringify($json.agent1_output) }}\n\nวิเคราะห์ด้วย 5-Why methodology แล้วตอบเป็น JSON:\n{\n  \"root_causes\": [\"สาเหตุรากเหง้าแต่ละข้อ\"],\n  \"five_why\": \"สรุป 5-Why analysis\",\n  \"responsible_dept\": \"แผนกที่รับผิดชอบ\",\n  \"risk_level\": \"สูง|กลาง|ต่ำ\"\n}"
+  }]
+}</pre>
+      </div>
+      <div class="note">✅ <span>วิธีดึงข้อมูล: <code style="background:#C8E6C9;padding:1px 5px;border-radius:3px">{{ JSON.stringify($json.agent1_output) }}</code> แปลง object เป็น string ให้ Claude อ่านได้</span></div>
+    </div>
+  </div>
+
+  <!-- Step 5: Parse A2 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#475569">P2</div>
+      <div class="step-info">
+        <div class="step-title">Parse Output Agent 2 + รวมข้อมูลทั้งหมด</div>
+        <div class="step-sub">รวม agent1 + agent2 output เป็น object เดียว พร้อมส่ง Agent 3</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head"><span class="prompt-label">⚙️ Code Node — Merge agent1 + agent2</span><button class="copy-btn" onclick="copyPrompt('wf1_merge',this)">⎘ คัดลอก</button></div>
+        <pre class="prompt-body" id="wf1_merge">const raw = $input.item.json.content[0].text
+  .replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
+const agent2 = JSON.parse(raw);
+return {
+  json: {
+    agent1_output: $input.item.json.agent1_output,  // จาก P1 (pass-through)
+    agent2_output: agent2
+  }
+};</pre>
+      </div>
+      <div class="warn">⚠️ <span>HTTP Request node ส่งแค่ response จาก Claude กลับมา — ข้อมูลจาก node ก่อนหน้าหายไป ต้องใช้ Code Node รวม (merge) ด้วยตัวเอง</span></div>
+    </div>
+  </div>
+
+  <!-- Step 6: Agent 3 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#1B7A3E">A3</div>
+      <div class="step-info">
+        <div class="step-title">Agent 3 — Report Writer (HTTP Request → Claude)</div>
+        <div class="step-sub">รับข้อมูลจาก Agent 1+2 → สร้างรายงานสมบูรณ์ + Action Plan → ส่ง Email</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head"><span class="prompt-label">📋 Body JSON — Agent 3</span><button class="copy-btn" onclick="copyPrompt('wf1_a3_body',this)">⎘ คัดลอก</button></div>
+        <pre class="prompt-body" id="wf1_a3_body">{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 1500,
+  "messages": [{
+    "role": "user",
+    "content": "คุณเป็น Technical Report Writer ของ CPF\n\nข้อมูล LOT:\n{{ JSON.stringify($json.agent1_output) }}\n\nผล Root Cause Analysis:\n{{ JSON.stringify($json.agent2_output) }}\n\nสร้าง QC Incident Report ภาษาไทย ประกอบด้วย:\n1. สรุปเหตุการณ์ (2-3 ประโยค)\n2. สาเหตุหลักที่พบ\n3. Action Plan (3-5 ข้อ พร้อม deadline และผู้รับผิดชอบ)\n4. Preventive Measure\n\nตอบเป็น plain text (ไม่ต้อง JSON) พร้อมส่ง Email ได้เลย"
+  }]
+}</pre>
+      </div>
+      <ul class="inst-list" style="margin-top:12px">
+        <li><span class="n">1</span><span>หลัง Agent 3 เพิ่ม Node: <strong>Gmail</strong> → Send Email</span></li>
+        <li><span class="n">2</span><span>To: <code>qc-manager@cpf.co.th</code></span></li>
+        <li><span class="n">3</span><span>Subject: <code>⚠️ QC Incident Report — {{ $json.agent1_output.lot_id }}</code></span></li>
+        <li><span class="n">4</span><span>Body: <code>{{ $('HTTP Request Agent3').item.json.content[0].text }}</code></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- n8n layout hint -->
+  <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 16px;margin-bottom:28px">
+    <div style="font-size:13px;font-weight:700;color:#0D2137;margin-bottom:8px">📐 โครงสร้าง Node ใน n8n — Workflow 1</div>
+    <div style="font-family:monospace;font-size:12px;line-height:2.2;color:#475569">
+      [Webhook] → [HTTP Agent1] → [Code: Parse P1] → [HTTP Agent2] → [Code: Merge P2] → [HTTP Agent3] → [Gmail]
+    </div>
+    <div style="font-size:11px;color:#94A3B8;margin-top:6px">รวม 7 nodes — เชื่อมซ้ายไปขวาตามลำดับ ไม่มี branch</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- WORKFLOW 2 -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2 class="section-title">Workflow 2 — Complaint Auto-Handler (2 Parallel → 1 Merge)</h2>
+
+  <div style="background:#F5F3FF;border:1px solid #C4B5FD;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px">
+    <strong>🎯 โจทย์:</strong> Complaint Email เข้า → Agent 1A ตรวจ QC record พร้อมกับ Agent 1B ตรวจ Policy → Agent 2 รวมผลแล้วร่าง Reply Email ส่งลูกค้า
+  </div>
+
+  <!-- Flow diagram -->
+  <div style="border:1px solid #6D28D940;border-radius:10px;overflow:hidden;margin-bottom:20px">
+    <div style="background:#6D28D9;color:#fff;padding:10px 16px;font-size:13px;font-weight:600">⚡ Parallel → Merge Flow — Agent 1A และ 1B ทำงานพร้อมกัน</div>
+    <div style="padding:16px;overflow-x:auto">
+      <div style="display:flex;align-items:center;gap:0;min-width:560px">
+        <div style="text-align:center;min-width:110px">
+          <div style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:8px;padding:10px 8px;font-size:12px;font-weight:600;color:#B45309">📥 Gmail Trigger<br><span style="font-weight:400;font-size:11px">Email Complaint</span></div>
+        </div>
+        <div style="color:#94A3B8;font-size:18px;padding:0 6px">→</div>
+        <!-- Parallel branch -->
+        <div style="display:flex;flex-direction:column;gap:8px;flex:1">
+          <div style="background:#EFF6FF;border:2px solid #2979C8;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;color:#1A4A7A">🧪 Agent 1A<br>QC Checker<br><span style="font-weight:400;font-size:11px">ตรวจ QC record LOT</span></div>
+          <div style="background:#F5F3FF;border:2px solid #6D28D9;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;color:#6D28D9">📜 Agent 1B<br>Policy Checker<br><span style="font-weight:400;font-size:11px">ตรวจ policy ชดเชย</span></div>
+        </div>
+        <div style="color:#94A3B8;font-size:18px;padding:0 6px">→</div>
+        <div style="text-align:center;min-width:90px">
+          <div style="background:#F0FDFA;border:2px solid #0F766E;border-radius:8px;padding:8px;font-size:11px;font-weight:700;color:#0F766E">🔀 Merge<br>รวม 2 outputs</div>
+        </div>
+        <div style="color:#94A3B8;font-size:18px;padding:0 6px">→</div>
+        <div style="text-align:center;min-width:100px">
+          <div style="background:#EDFAF2;border:2px solid #1B7A3E;border-radius:8px;padding:8px;font-size:12px;font-weight:700;color:#1B7A3E">✍️ Agent 2<br>Reply Drafter<br><span style="font-weight:400;font-size:11px">ร่าง + ส่ง Email</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#0D2137;margin-bottom:14px">📐 สร้างใน n8n — Step by Step</div>
+
+  <!-- WF2 S1: Gmail Trigger -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#B45309">S1</div>
+      <div class="step-info">
+        <div class="step-title">Trigger — Gmail รับ Complaint Email</div>
+        <div class="step-sub">รอรับ email complaint เข้า inbox</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="inst-list">
+        <li><span class="n">1</span><span>เพิ่ม Node: <strong>Gmail Trigger</strong></span></li>
+        <li><span class="n">2</span><span>Event: <strong>Message Received</strong></span></li>
+        <li><span class="n">3</span><span>Label: <code>complaint</code> (สร้าง label ใน Gmail ก่อน) หรือ filter <code>from:@customer.co.th</code></span></li>
+        <li><span class="n">4</span><span>Poll every: <strong>1 minute</strong></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- WF2 S2: Parallel branch -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#6D28D9">S2</div>
+      <div class="step-info">
+        <div class="step-title">แยก Parallel — Agent 1A และ 1B ทำพร้อมกัน</div>
+        <div class="step-sub">n8n รัน branch พร้อมกัน → ประหยัดเวลาครึ่งหนึ่ง</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div style="background:#F5F3FF;border:1px solid #C4B5FD;border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#5B21B6">
+        ⚡ <strong>วิธีสร้าง Parallel ใน n8n:</strong> ลาก connection จาก Gmail Trigger ไปยัง HTTP Request A1 <em>และ</em> HTTP Request B1 พร้อมกัน — n8n จะรันทั้งสอง branch อัตโนมัติ
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <!-- Agent 1A -->
+        <div style="border:2px solid #2979C8;border-radius:10px;overflow:hidden">
+          <div style="background:#2979C8;color:#fff;padding:8px 14px;font-size:12px;font-weight:700">🧪 Agent 1A — QC Checker</div>
+          <div style="padding:12px 14px">
+            <div class="prompt-box" style="margin-bottom:0">
+              <div class="prompt-head" style="background:#DBEAFE;border-color:#A0BBE8"><span class="prompt-label" style="color:#1A4A7A">Body JSON — Agent 1A</span><button class="copy-btn" onclick="copyPrompt('wf2_1a',this)">⎘ คัดลอก</button></div>
+              <pre class="prompt-body" id="wf2_1a">{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 800,
+  "messages": [{
+    "role": "user",
+    "content": "คุณเป็น QC Specialist ของ CPF\n\nEmail Complaint:\nจาก: {{ $json.from }}\nเรื่อง: {{ $json.subject }}\nเนื้อหา: {{ $json.text }}\n\nตรวจสอบว่า LOT ที่ระบุใน complaint มีประวัติ QC fail หรือไม่ (ตอบตาม knowledge ที่มี)\nตอบเป็น JSON:\n{\n  \"lot_found\": true/false,\n  \"qc_status\": \"pass|fail|unknown\",\n  \"qc_notes\": \"รายละเอียด QC ที่เกี่ยวข้อง\"\n}"
+  }]
+}</pre>
+            </div>
+          </div>
+        </div>
+        <!-- Agent 1B -->
+        <div style="border:2px solid #6D28D9;border-radius:10px;overflow:hidden">
+          <div style="background:#6D28D9;color:#fff;padding:8px 14px;font-size:12px;font-weight:700">📜 Agent 1B — Policy Checker</div>
+          <div style="padding:12px 14px">
+            <div class="prompt-box" style="margin-bottom:0">
+              <div class="prompt-head" style="background:#EDE9FE;border-color:#C4B5FD"><span class="prompt-label" style="color:#6D28D9">Body JSON — Agent 1B</span><button class="copy-btn" onclick="copyPrompt('wf2_1b',this)">⎘ คัดลอก</button></div>
+              <pre class="prompt-body" id="wf2_1b">{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 800,
+  "messages": [{
+    "role": "user",
+    "content": "คุณเป็น Customer Policy Specialist ของ CPF\n\nEmail Complaint:\nจาก: {{ $json.from }}\nเรื่อง: {{ $json.subject }}\nเนื้อหา: {{ $json.text }}\n\nระบุ policy การชดเชยที่เหมาะสม:\nตอบเป็น JSON:\n{\n  \"complaint_type\": \"quality|delivery|packaging|other\",\n  \"severity\": \"urgent|medium|low\",\n  \"compensation\": \"เปลี่ยนสินค้า|คืนเงิน|ส่วนลด|ขอโทษ\",\n  \"sla_hours\": 2/24/48\n}"
+  }]
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WF2 S3: Merge -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#0F766E">S3</div>
+      <div class="step-info">
+        <div class="step-title">Merge + Parse — รวม output จาก 1A และ 1B</div>
+        <div class="step-sub">รอให้ทั้งสอง branch เสร็จแล้วรวม → ส่งต่อ Agent 2</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="inst-list">
+        <li><span class="n">1</span><span>เพิ่ม Node: <strong>Merge</strong></span></li>
+        <li><span class="n">2</span><span>Mode: <strong>Wait for All Input Streams</strong> ← สำคัญมาก ต้องรอทั้งสอง branch</span></li>
+        <li><span class="n">3</span><span>ลาก connection จาก Agent 1A <em>และ</em> Agent 1B มาที่ Merge Node</span></li>
+        <li><span class="n">4</span><span>หลัง Merge เพิ่ม <strong>Code Node</strong> เพื่อ parse และรวมข้อมูล</span></li>
+      </ul>
+      <div class="prompt-box">
+        <div class="prompt-head"><span class="prompt-label">⚙️ Code Node — Parse + Merge 1A & 1B</span><button class="copy-btn" onclick="copyPrompt('wf2_merge',this)">⎘ คัดลอก</button></div>
+        <pre class="prompt-body" id="wf2_merge">// Merge node ส่ง items มาเป็น array [item1A, item1B]
+const items = $input.all();
+
+function parseAgent(item) {
+  const raw = item.json?.content?.[0]?.text ?? '';
+  try {
+    return JSON.parse(raw.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim());
+  } catch { return { raw }; }
+}
+
+const agent1a = parseAgent(items[0]);  // QC Checker
+const agent1b = parseAgent(items[1]);  // Policy Checker
+
+return {
+  json: {
+    qc_result: agent1a,
+    policy_result: agent1b
+  }
+};</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- WF2 S4: Agent 2 Draft Reply -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#1B7A3E">A2</div>
+      <div class="step-info">
+        <div class="step-title">Agent 2 — Reply Drafter → ส่ง Gmail</div>
+        <div class="step-sub">รับผล QC + Policy → ร่าง email ตอบกลับลูกค้าภาษาไทย → ส่งทันที</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head"><span class="prompt-label">📋 Body JSON — Agent 2</span><button class="copy-btn" onclick="copyPrompt('wf2_a2',this)">⎘ คัดลอก</button></div>
+        <pre class="prompt-body" id="wf2_a2">{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 1000,
+  "messages": [{
+    "role": "user",
+    "content": "คุณเป็น CS Manager ของ CPF เขียน email ตอบลูกค้าสุภาพ เป็นมืออาชีพ\n\nผล QC Check: {{ JSON.stringify($json.qc_result) }}\nผล Policy Check: {{ JSON.stringify($json.policy_result) }}\n\nเขียน email ตอบกลับ (ภาษาไทย):\n- ขึ้นต้นสุภาพ\n- แสดงความเสียใจ\n- แจ้งสิ่งที่ CPF จะดำเนินการ (ตาม policy)\n- แจ้ง SLA ({{ $json.policy_result.sla_hours }} ชั่วโมง)\n- ลงท้าย: ทีม Customer Service CPF\n\nตอบแค่เนื้อหา email เท่านั้น ไม่ต้อง JSON"
+  }]
+}</pre>
+      </div>
+      <ul class="inst-list" style="margin-top:12px">
+        <li><span class="n">1</span><span>หลัง Agent 2 เพิ่ม Node: <strong>Gmail</strong> → Send</span></li>
+        <li><span class="n">2</span><span>To: <code>{{ $('Gmail Trigger').item.json.from }}</code></span></li>
+        <li><span class="n">3</span><span>Subject: <code>Re: {{ $('Gmail Trigger').item.json.subject }}</code></span></li>
+        <li><span class="n">4</span><span>Body: <code>{{ $json.content[0].text }}</code></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- n8n layout WF2 -->
+  <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 16px;margin-bottom:28px">
+    <div style="font-size:13px;font-weight:700;color:#0D2137;margin-bottom:8px">📐 โครงสร้าง Node ใน n8n — Workflow 2</div>
+    <div style="font-family:monospace;font-size:12px;line-height:2.2;color:#475569">
+      [Gmail Trigger] ┬→ [HTTP Agent 1A: QC Checker]     ┐<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└→ [HTTP Agent 1B: Policy Checker] ┘→ [Merge] → [Code: Parse] → [HTTP Agent2: Drafter] → [Gmail Send]
+    </div>
+    <div style="font-size:11px;color:#94A3B8;margin-top:6px">รวม 7 nodes — Gmail Trigger แตกเป็น 2 branches พร้อมกัน รวมกัน Merge แล้ว sequential ต่อ</div>
+  </div>
+
+  <!-- Common mistakes -->
+  <h2 class="section-title">⚠️ ข้อควรระวัง</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+    <div style="background:#FEF0EE;border:1px solid #FECACA;border-radius:10px;padding:14px">
+      <div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:8px">❌ ที่มักทำผิด</div>
+      <ul style="font-size:12px;color:#7F1D1D;line-height:2;padding-left:14px">
+        <li>ไม่ parse JSON ก่อนส่งต่อ Agent ถัดไป</li>
+        <li>ลืม merge ข้อมูล Agent ก่อนหน้า (ข้อมูลหาย)</li>
+        <li>Merge Node ใน Parallel ลืมเปิด "Wait for all streams"</li>
+        <li>ใส่ข้อมูล context มากเกินไปใน prompt → token เกิน</li>
+      </ul>
+    </div>
+    <div style="background:#EDFAF2;border:1px solid #86EFAC;border-radius:10px;padding:14px">
+      <div style="font-size:13px;font-weight:700;color:#1B7A3E;margin-bottom:8px">✅ Best Practice</div>
+      <ul style="font-size:12px;color:#14532D;line-height:2;padding-left:14px">
+        <li>Test ทีละ Node ก่อน connect</li>
+        <li>ให้แต่ละ Agent ตอบ JSON เสมอ — parse ง่ายกว่า</li>
+        <li>ตั้งชื่อ Node ให้ชัด: "HTTP Agent 1A QC" ไม่ใช่ "HTTP Request"</li>
+        <li>ใส่ error handling (Code Node try-catch) ทุก parse step</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tip">💡 <span><strong>เริ่มจาก Workflow 1 ก่อน</strong> — Sequential ง่ายกว่า เข้าใจ flow ก่อน แล้วค่อยต่อ Workflow 2 ที่มี Parallel</span></div>
+
+<div class="nav-footer"><a href="module5.html" class="nav-btn">← Module 05: n8n Local</a><a href="module6.html" class="nav-btn primary">Module 06: MCP →</a></div>
+</main>
+
+<script>
+function copyPrompt(id,btn){
+  var t=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(function(){
+    var o=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';
+    btn.style.background='#1B7A3E';btn.style.color='#fff';
+    setTimeout(function(){btn.textContent=o;btn.style.background='';btn.style.color='';},2000);
+  }).catch(function(){btn.textContent='(เลือกด้วยมือ)';});
+}
+var path=window.location.pathname.split('/').pop();
+document.querySelectorAll('.sidebar a').forEach(function(a){
+  if(a.getAttribute('href')===path)a.classList.add('active');
+});
+function showTab(group,id){
+  document.querySelectorAll('.tab-content[data-group="'+group+'"]').forEach(function(el){el.classList.remove('on');});
+  document.querySelectorAll('.tab-btn[data-group="'+group+'"]').forEach(function(el){el.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+  document.querySelector('.tab-btn[data-target="'+id+'"]').classList.add('on');
+}
+</script>
+
+</body>
+</html>

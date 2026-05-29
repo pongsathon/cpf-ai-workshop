@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claude Code — AI Coding Agent — CPF AI Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --navy:#0D2137;--blue:#1A4A7A;--sky:#2979C8;
+  --accent:#E85D04;--acl:#FFF3EC;
+  --green:#1B7A3E;--gcl:#EDFAF2;
+  --red:#C0392B;--rcl:#FEF0EE;
+  --amber:#B45309;--acl2:#FFFBEB;
+  --orange:#D35400;--ocl:#FEF3EC;
+  --purple:#6D28D9;--pcl:#F5F3FF;
+  --teal:#0F766E;--tcl:#F0FDFA;
+  --cyan:#0891B2;--ccl:#ECFEFF;
+  --gray50:#F8FAFC;--gray100:#F1F5F9;--gray200:#E2E8F0;
+  --gray400:#94A3B8;--gray600:#475569;--gray800:#1E293B;
+  --text:#1A2332;--muted:#5A6B7E;--sidebar:220px;
+  --font:'Sarabun',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--text);background:#fff;
+     display:flex;min-height:100vh;font-size:15px;line-height:1.7}
+.sidebar{width:var(--sidebar);background:var(--navy);position:fixed;
+  top:0;left:0;height:100vh;overflow-y:auto;flex-shrink:0;z-index:100}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo .brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.sidebar-section{padding:10px 0 4px 18px;font-size:10px;color:rgba(255,255,255,.35);
+  text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:8px 18px;
+  font-size:13px;color:rgba(255,255,255,.65);text-decoration:none;
+  border-left:3px solid transparent;transition:all .15s}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sidebar a.active{color:#fff;background:rgba(41,121,200,.25);border-left-color:var(--sky)}
+.sidebar a .mn{font-size:10px;background:rgba(255,255,255,.12);
+  border-radius:4px;padding:1px 6px;font-family:var(--mono)}
+.main{margin-left:var(--sidebar);flex:1;max-width:820px;padding:40px 48px 80px}
+.page-header{border-bottom:2px solid var(--navy);padding-bottom:20px;margin-bottom:36px}
+.module-num{font-size:11px;font-weight:600;color:var(--cyan);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:6px}
+.page-title{font-size:30px;font-weight:700;color:var(--navy);line-height:1.2}
+.page-desc{font-size:15px;color:var(--muted);margin-top:8px;line-height:1.6}
+.meta-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+  border-radius:20px;font-size:12px;font-weight:500;border:1px solid}
+.section-title{font-size:18px;font-weight:700;color:var(--navy);
+  margin:36px 0 18px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gray200)}
+.step{background:#fff;border:1px solid var(--gray200);border-radius:12px;
+  margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.step:hover{border-color:var(--cyan)}
+.step-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--cyan);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.step-info{flex:1}
+.step-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.step-sub{font-size:13px;color:var(--muted)}
+.step-body{padding:0 20px 18px 66px}
+.inst-list{background:var(--gray50);border-radius:8px;padding:14px 16px;
+  list-style:none;margin-bottom:14px}
+.inst-list li{display:flex;gap:10px;padding:5px 0;font-size:13px;
+  border-bottom:1px solid var(--gray200)}
+.inst-list li:last-child{border-bottom:none;padding-bottom:0}
+.inst-list li .n{min-width:20px;height:20px;border-radius:50%;
+  background:var(--navy);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.prompt-box{border:1px solid #A5D8F0;border-radius:10px;background:#ECFEFF;
+  margin-bottom:14px;overflow:hidden}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:#CFFAFE;border-bottom:1px solid #A5D8F0}
+.prompt-label{font-size:10px;font-weight:700;color:var(--cyan);
+  text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;
+  border:1px solid #67C4DC;background:#fff;color:var(--cyan);font-weight:500;
+  font-family:var(--font)}
+.copy-btn:hover{background:var(--cyan);color:#fff}
+.prompt-body{padding:14px 16px;font-size:12px;line-height:1.8;
+  white-space:pre-wrap;font-family:var(--mono);color:var(--gray800)}
+.screen-box{background:#0D1117;border-radius:10px;margin-bottom:14px;overflow:hidden}
+.screen-head{background:#21262D;padding:8px 14px;display:flex;align-items:center;gap:6px}
+.dot-r{width:10px;height:10px;border-radius:50%;background:#FF5F57}
+.dot-y{width:10px;height:10px;border-radius:50%;background:#FFBD2E}
+.dot-g{width:10px;height:10px;border-radius:50%;background:#28CA41}
+.screen-lbl{font-size:11px;color:#8B949E;margin-left:6px;font-family:var(--mono)}
+.screen-body{padding:16px 18px;font-size:12px;color:#C9D1D9;
+  font-family:var(--mono);line-height:1.8;white-space:pre}
+.tip{background:var(--acl2);border-left:4px solid var(--accent);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--amber);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.note{background:var(--gcl);border-left:4px solid var(--green);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--green);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.warn{background:var(--rcl);border-left:4px solid var(--red);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--red);margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.info-box{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px}
+.info-box h4{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px}
+.output-box{border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;
+  background:var(--ccl);padding:14px 16px;margin-bottom:14px}
+.output-label{font-size:10px;font-weight:700;color:var(--cyan);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.output-body{font-size:12px;line-height:1.8;white-space:pre-wrap;
+  color:var(--gray800);font-family:var(--mono)}
+.badge{display:inline-block;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.cmd-card{background:var(--gray50);border:1px solid var(--gray200);border-radius:10px;padding:12px 14px}
+.cmd-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--cyan);margin-bottom:4px}
+.cmd-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.shortcut-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+.shortcut-table th{background:var(--navy);color:#fff;padding:8px 12px;text-align:left}
+.shortcut-table td{padding:8px 12px;border-bottom:1px solid var(--gray200)}
+.shortcut-table tr:nth-child(even) td{background:var(--gray50)}
+.shortcut-table .key{font-family:var(--mono);font-size:11px;background:#E2E8F0;
+  padding:2px 6px;border-radius:4px;color:var(--navy);font-weight:600}
+.concept-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.concept-card{border:1px solid var(--gray200);border-radius:10px;padding:14px;text-align:center}
+.concept-icon{font-size:28px;margin-bottom:8px}
+.concept-name{font-size:13px;font-weight:700;color:var(--navy)}
+.concept-note{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative}
+  .main{margin-left:0;padding:24px 20px 60px}body{flex-direction:column}
+  .cmd-grid,.concept-row{grid-template-columns:1fr}}
+.nav-footer{display:flex;justify-content:space-between;
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--gray200)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+  border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;
+  border:1px solid var(--gray200);color:var(--navy);transition:all .15s}
+.nav-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav-btn.primary{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+.nav-btn.primary:hover{background:var(--navy)}
+</style>
+</head>
+<body>
+<nav class="sidebar"><div class="sidebar-logo"><div class="brand">🐔 CPF AI Workshop</div><div class="sub">คู่มือประกอบการสอน 2569</div></div><div class="sidebar-section">Modules</div><a href="index.html"><span class="mn">🏠</span>ภาพรวม Workshop</a><a href="module1.html"><span class="mn">01</span>AI Agent คืออะไร + MCP</a><a href="module2.html"><span class="mn">02</span>Claude.ai — เริ่มต้น</a><a href="module3.html"><span class="mn">03</span>Workshop Labs</a><a href="module4.html"><span class="mn">04</span>Dify — Chatbot Builder</a><a href="module4b.html"><span class="mn">04B</span>n8n Cloud + LLM</a><a href="module5.html"><span class="mn">05</span>n8n — Local Install</a><a href="module-multiagent.html"><span class="mn">05B</span>Multi-Agent Workflows</a><a href="module-stitch.html"><span class="mn">05C</span>Stitch + Antigravity 🆕</a><a href="module-claudecode.html"><span class="mn">05D</span>Claude Code</a><a href="module-claudecode-project.html"><span class="mn">05E</span>Full Stack Project 🆕</a><a href="module6.html"><span class="mn">06</span>MCP Protocol</a><a href="module7.html"><span class="mn">07</span>Capstone Project</a></nav>
+
+<main class="main">
+  <header class="page-header" style="border-bottom-color:#0891B2">
+    <div class="module-num">MODULE 05D &nbsp;·&nbsp; 60 นาที</div>
+    <h1 class="page-title">Claude Code — AI Coding Agent</h1>
+    <p class="page-desc">เขียนโค้ด แก้บัค และสร้าง Automation Script ด้วย AI ใน Terminal โดยไม่ต้องเป็น Programmer มืออาชีพ</p>
+    <div class="meta-pills">
+      <span class="pill" style="background:#0891B215;border-color:#0891B240;color:#0891B2">⏱ 60 นาที</span>
+      <span class="pill" style="background:#1B7A3E15;border-color:#1B7A3E40;color:#1B7A3E">Node.js Required</span>
+      <span class="pill" style="background:#6D28D915;border-color:#6D28D940;color:#6D28D9">Terminal / CLI</span>
+      <span class="pill" style="background:#E85D0415;border-color:#E85D0440;color:#E85D04">🆕 New Module</span>
+    </div>
+  </header>
+
+  <!-- ภาพรวม -->
+  <div style="background:#ECFEFF;border:1px solid #A5D8F0;border-radius:12px;padding:18px;margin-bottom:24px">
+    <div style="font-size:13px;font-weight:700;color:#0891B2;margin-bottom:10px">🤖 Claude Code คืออะไร?</div>
+    <p style="font-size:13px;color:#0E7490;line-height:1.7;margin-bottom:10px">
+      Claude Code คือ <strong>AI Coding Agent</strong> จาก Anthropic ที่ทำงานใน Terminal โดยตรง ต่างจาก Chatbot ทั่วไปตรงที่มันสามารถ <strong>อ่านไฟล์ในโปรเจกต์จริง → แก้ไขโค้ด → รันคำสั่ง → Commit Git</strong> ได้ทั้งหมดด้วยตัวเอง ผ่านภาษาธรรมชาติ ไม่ต้อง copy-paste
+    </p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px">
+      <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #CFFAFE">
+        <div style="font-weight:700;color:#0891B2;margin-bottom:4px">📂 อ่าน Codebase</div>
+        <div style="color:#475569">เข้าใจโปรเจกต์ทั้งหมด ไม่ใช่แค่ไฟล์เดียว</div>
+      </div>
+      <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #CFFAFE">
+        <div style="font-weight:700;color:#0891B2;margin-bottom:4px">✏️ แก้ไขไฟล์จริง</div>
+        <div style="color:#475569">เขียน บันทึก ลบ ไฟล์ได้โดยตรง</div>
+      </div>
+      <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #CFFAFE">
+        <div style="font-weight:700;color:#0891B2;margin-bottom:4px">🔁 รัน & ทดสอบ</div>
+        <div style="color:#475569">รัน script, test และ Git ได้เลย</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">💡 <span><strong>เหมาะกับ CPF เพราะ</strong> — ทีม IT, Data, QC, Logistics สามารถใช้ Claude Code เขียน Python Script วิเคราะห์ข้อมูลโรงงาน, อ่าน Excel, สร้าง Report อัตโนมัติ โดยไม่ต้องเป็น Developer เต็มตัว</span></div>
+
+  <!-- ส่วน 1: ติดตั้ง -->
+  <h2 class="section-title">ขั้นตอนที่ 1 — ติดตั้ง Claude Code</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <div class="step-title">ตรวจสอบ Node.js (ต้องเวอร์ชัน 18 ขึ้นไป)</div>
+        <div class="step-sub">Claude Code ต้องการ Node.js v18+ เป็น runtime</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="screen-box">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Terminal</span></div>
+        <div class="screen-body"><span style="color:#58A6FF">$</span> node --version
+v20.11.0   <span style="color:#3FB950"># ✅ OK — ต้องเป็น v18+</span>
+
+<span style="color:#58A6FF">$</span> npm --version
+10.2.4     <span style="color:#3FB950"># ✅ OK</span></div>
+      </div>
+      <div class="warn">⚠️ <span>ถ้าไม่มี Node.js ให้ดาวน์โหลดจาก <strong>nodejs.org</strong> เลือก LTS version แล้วติดตั้งก่อน</span></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-info">
+        <div class="step-title">ติดตั้ง Claude Code ด้วย npm</div>
+        <div class="step-sub">ติดตั้งครั้งเดียว ใช้ได้ทุก project</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="screen-box">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Terminal</span></div>
+        <div class="screen-body"><span style="color:#58A6FF">$</span> npm install -g @anthropic-ai/claude-code
+
+<span style="color:#8B949E">added 45 packages in 12s</span>
+
+<span style="color:#58A6FF">$</span> claude --version
+<span style="color:#3FB950">Claude Code 2.x.x</span></div>
+      </div>
+      <div class="tip">💡 <span>ถ้าเห็น <code style="background:#fff3;padding:1px 4px;border-radius:3px">permission error</code> บน macOS ให้ใช้ <code style="background:#fff3;padding:1px 4px;border-radius:3px">sudo npm install -g @anthropic-ai/claude-code</code></span></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div class="step-info">
+        <div class="step-title">เปิดใช้งานและ Login</div>
+        <div class="step-sub">รัน claude ครั้งแรก แล้ว login ด้วย Anthropic account</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="screen-box">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Terminal</span></div>
+        <div class="screen-body"><span style="color:#58A6FF">$</span> claude
+<span style="color:#E6EDF3">╭──────────────────────────────────────────╮</span>
+<span style="color:#E6EDF3">│  Welcome to Claude Code!                 │</span>
+<span style="color:#E6EDF3">│  Type /help for available commands       │</span>
+<span style="color:#E6EDF3">╰──────────────────────────────────────────╯</span>
+
+<span style="color:#58A6FF">></span> /login
+<span style="color:#8B949E">Opening browser for authentication...</span>
+<span style="color:#3FB950">✓ Logged in as yourname@cpf.co.th</span></div>
+      </div>
+      <div class="note">✅ <span>login ครั้งเดียว credentials จะถูกบันทึกไว้ ไม่ต้อง login ใหม่ทุกครั้ง</span></div>
+    </div>
+  </div>
+
+  <!-- ส่วน 2: คำสั่งพื้นฐาน -->
+  <h2 class="section-title">ขั้นตอนที่ 2 — คำสั่งพื้นฐาน (Slash Commands)</h2>
+
+  <div class="cmd-grid">
+    <div class="cmd-card">
+      <div class="cmd-name">/help</div>
+      <div class="cmd-desc">แสดงคำสั่งทั้งหมดที่ใช้ได้ในขณะนั้น</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">/clear</div>
+      <div class="cmd-desc">ล้าง conversation history ในเซสชันปัจจุบัน</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">/cost</div>
+      <div class="cmd-desc">ดู token ที่ใช้ไปและค่าใช้จ่ายโดยประมาณ</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">/init</div>
+      <div class="cmd-desc">สร้างไฟล์ CLAUDE.md สำหรับ project instructions</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">/doctor</div>
+      <div class="cmd-desc">ตรวจสอบ health check การติดตั้งและ config</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-name">/bug</div>
+      <div class="cmd-desc">Report bug ไปยัง Anthropic โดยตรง</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Keyboard Shortcuts</h2>
+  <table class="shortcut-table">
+    <tr><th>ปุ่ม</th><th>ความหมาย</th></tr>
+    <tr><td><span class="key">Ctrl + C</span></td><td>หยุด generation ที่กำลังทำงานอยู่</td></tr>
+    <tr><td><span class="key">Ctrl + D</span></td><td>ออกจาก Claude Code session</td></tr>
+    <tr><td><span class="key">Ctrl + L</span></td><td>ล้างหน้าจอ (history ยังคงอยู่)</td></tr>
+    <tr><td><span class="key">↑ / ↓</span></td><td>เลื่อนดู command history</td></tr>
+    <tr><td><span class="key">Shift + Tab</span></td><td>สลับ permission mode: Normal → Auto-Accept → Plan</td></tr>
+    <tr><td><span class="key">\ + Enter</span></td><td>พิมพ์หลายบรรทัด (multi-line input)</td></tr>
+    <tr><td><span class="key">Esc Esc</span></td><td>แก้ไข prompt ล่าสุดที่พิมพ์ไป</td></tr>
+  </table>
+
+  <div class="tip">💡 <span><strong>Plan Mode</strong> (กด Shift+Tab สองครั้ง) — Claude จะวิเคราะห์และแสดงแผนการทำงานก่อน โดยไม่แก้ไขไฟล์จริง ใช้เพื่อตรวจสอบก่อนอนุมัติ — แนะนำใช้เสมอกับงานสำคัญ</span></div>
+
+  <!-- ส่วน 3: CLAUDE.md -->
+  <h2 class="section-title">ขั้นตอนที่ 3 — ตั้งค่า CLAUDE.md</h2>
+
+  <div class="info-box">
+    <h4>📄 CLAUDE.md คืออะไร?</h4>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6">ไฟล์ instruction พิเศษที่ Claude Code อ่านทุกครั้งที่เริ่ม session ใหม่ ช่วยให้ Claude เข้าใจ context ของ project เช่น โครงสร้างโฟลเดอร์ รูปแบบข้อมูล และกฎการทำงาน ทำครั้งเดียว ใช้ได้ตลอด</p>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <div class="step-title">สร้าง CLAUDE.md สำหรับงาน CPF</div>
+        <div class="step-sub">ไปที่โฟลเดอร์งาน แล้วรัน /init หรือสร้างไฟล์เอง</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="screen-box">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Terminal</span></div>
+        <div class="screen-body"><span style="color:#58A6FF">$</span> cd /Users/yourname/CPF-Data-Project
+<span style="color:#58A6FF">$</span> claude
+<span style="color:#58A6FF">></span> /init
+<span style="color:#3FB950">✓ Created CLAUDE.md</span></div>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">ตัวอย่าง CLAUDE.md สำหรับทีม QC CPF</span>
+          <button class="copy-btn" onclick="copyPrompt('claudemd','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="claudemd"># CPF QC Data Project
+
+## เกี่ยวกับ Project นี้
+ระบบวิเคราะห์ข้อมูล QC โรงงาน CPF จาก Excel รายวัน
+
+## โครงสร้างโฟลเดอร์
+- /data/raw/     → ไฟล์ Excel จากโรงงาน (ห้ามแก้ไข)
+- /data/output/  → ผลลัพธ์ที่ประมวลผลแล้ว
+- /scripts/      → Python scripts
+- /reports/      → PDF/HTML reports
+
+## รูปแบบข้อมูล
+- ไฟล์ Excel: ชื่อ QC_YYYYMMDD_PlantCode.xlsx
+- คอลัมน์หลัก: Date, Plant, Line, Product, Value, Pass/Fail
+- Encoding: UTF-8-SIG (มี BOM สำหรับภาษาไทย)
+
+## กฎการทำงาน
+- ใช้ Python 3.10+ และ pandas, openpyxl
+- ตั้งชื่อฟังก์ชันเป็น snake_case ภาษาอังกฤษ
+- comment ภาษาไทย เพื่อให้ทีมอ่านเข้าใจ
+- ทดสอบด้วย sample data ก่อน run จริงเสมอ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Labs -->
+  <h2 class="section-title">🧪 Labs — ฝึกปฏิบัติ 3 Labs</h2>
+
+  <!-- Lab 1 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#1B7A3E">A</div>
+      <div class="step-info">
+        <div class="step-title">Lab 1 — สร้าง Python Script วิเคราะห์ข้อมูล QC</div>
+        <div class="step-sub">ให้ Claude Code เขียน script อ่าน Excel และสรุปผล</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">Prompt ที่พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('lab1','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="lab1">เขียน Python script ชื่อ analyze_qc.py ที่:
+1. อ่านไฟล์ Excel ทุกไฟล์ในโฟลเดอร์ data/raw/
+2. รวม column: Date, Plant, Line, Product, Value, Pass/Fail
+3. คำนวณ Pass Rate (%) แยกตาม Plant และ Product
+4. บันทึกผลลัพธ์เป็น data/output/qc_summary.xlsx
+5. แสดง summary ในหน้า terminal พร้อม emoji ✅ ❌
+
+ใช้ pandas และ openpyxl, comment เป็นภาษาไทย</div>
+      </div>
+
+      <div class="screen-box">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">ผลลัพธ์ที่ Claude Code ทำ</span></div>
+        <div class="screen-body"><span style="color:#3FB950">✓ Created</span> scripts/analyze_qc.py
+<span style="color:#3FB950">✓ Running</span> python scripts/analyze_qc.py
+
+<span style="color:#E6EDF3">📊 QC Summary Report — 2025-01-15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Plant A  │ Chicken Product  │ ✅ 97.2%
+Plant A  │ Pork Product     │ ✅ 94.8%
+Plant B  │ Chicken Product  │ ❌ 88.3%  ← ต่ำกว่าเกณฑ์!
+Plant B  │ Shrimp Product   │ ✅ 96.1%
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span style="color:#3FB950">✓ Saved</span> data/output/qc_summary.xlsx</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lab 2 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#6D28D9">B</div>
+      <div class="step-info">
+        <div class="step-title">Lab 2 — สร้าง Automated Report ส่ง Email</div>
+        <div class="step-sub">ต่อยอด Lab 1 ให้ส่ง HTML report ทาง email อัตโนมัติ</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">Prompt ที่พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('lab2','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="lab2">ต่อยอดจาก analyze_qc.py โดย:
+1. สร้าง HTML report สวยงาม มีตารางและสีแดง/เขียวตาม Pass/Fail
+2. บันทึกเป็น reports/qc_report_YYYYMMDD.html
+3. ส่ง email อัตโนมัติด้วย smtplib ไปยัง qc-team@cpf.co.th
+   - Subject: "[CPF QC] Daily Report {date}"
+   - แนบไฟล์ Excel ด้วย
+4. ใส่ try-except ทุก step และ log error ลงไฟล์ error.log</div>
+      </div>
+
+      <div class="output-box">
+        <div class="output-label">สิ่งที่ Claude Code สร้างให้</div>
+        <div class="output-body">scripts/
+  ├── analyze_qc.py       (แก้ไขจากเดิม)
+  ├── generate_report.py  (สร้างใหม่)
+  └── send_email.py       (สร้างใหม่)
+reports/
+  └── qc_report_20250115.html
+logs/
+  └── error.log</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lab 3 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" style="background:#D35400">C</div>
+      <div class="step-info">
+        <div class="step-title">Lab 3 — วิเคราะห์โค้ดที่มีอยู่แล้ว</div>
+        <div class="step-sub">ให้ Claude Code อ่านและปรับปรุงโค้ดเก่าของทีม</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="inst-list">
+        <li><span class="n">1</span><span>นำโค้ดหรือ script Python ที่ทีมใช้งานอยู่มาวางในโฟลเดอร์ project</span></li>
+        <li><span class="n">2</span><span>รัน Claude Code แล้วพิมพ์ prompt ด้านล่าง</span></li>
+        <li><span class="n">3</span><span>Claude จะอ่านไฟล์ทั้งหมด วิเคราะห์ และให้คำแนะนำ</span></li>
+      </ul>
+
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">Prompt วิเคราะห์โค้ดเก่า</span>
+          <button class="copy-btn" onclick="copyPrompt('lab3a','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="lab3a">อ่านไฟล์ทุกไฟล์ในโฟลเดอร์ scripts/ แล้ว:
+1. สรุปว่าแต่ละไฟล์ทำอะไร อธิบายเป็นภาษาไทย
+2. หา bug หรือ error ที่อาจเกิดขึ้น
+3. แนะนำ 3 วิธีปรับปรุงประสิทธิภาพ
+4. บอกว่ามีไฟล์ซ้ำซ้อนหรือไม่จำเป็นหรือเปล่า</div>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">Prompt แปลงโค้ดให้ง่ายขึ้น</span>
+          <button class="copy-btn" onclick="copyPrompt('lab3b','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="lab3b">แก้ไข old_script.py โดย:
+- ลบโค้ดที่ไม่ได้ใช้งาน
+- เพิ่ม comment ภาษาไทยทุก function
+- แบ่งเป็น function ย่อยๆ แทนโค้ดยาวๆ บรรทัดเดียว
+- เพิ่ม error handling ที่ครอบคลุม
+- ทดสอบว่ายังให้ผลลัพธ์เดิมหลังแก้ไข</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ส่วน 4: Use Cases CPF -->
+  <h2 class="section-title">💡 Use Cases สำหรับ CPF</h2>
+
+  <div class="concept-row">
+    <div class="concept-card">
+      <div class="concept-icon">📊</div>
+      <div class="concept-name">ทีม Data / QC</div>
+      <div class="concept-note">วิเคราะห์ Excel อัตโนมัติ, หา anomaly, สร้าง dashboard report รายวัน</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">🏭</div>
+      <div class="concept-name">ทีม Production</div>
+      <div class="concept-note">เขียน script ดึงข้อมูลจาก ERP/PLC, คำนวณ OEE, ส่ง LINE Alert</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">👥</div>
+      <div class="concept-name">ทีม HR</div>
+      <div class="concept-note">ประมวลผลใบลาอัตโนมัติ, สร้าง payroll summary, track ประวัติพนักงาน</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">🚛</div>
+      <div class="concept-name">ทีม Logistics</div>
+      <div class="concept-note">วิเคราะห์เส้นทางขนส่ง, ติดตาม KPI, forecast สต็อก</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">💰</div>
+      <div class="concept-name">ทีม Finance</div>
+      <div class="concept-note">Automate ปิดบัญชีรายเดือน, reconcile ตัวเลข, สร้าง budget report</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">🔧</div>
+      <div class="concept-name">ทีม IT</div>
+      <div class="concept-note">เขียน automation script, ดูแล server log, สร้าง monitoring tool</div>
+    </div>
+  </div>
+
+  <!-- Tips -->
+  <h2 class="section-title">เคล็ดลับการใช้งาน</h2>
+
+  <div class="info-box">
+    <h4>🎯 Prompt ที่ดีสำหรับ Claude Code</h4>
+    <ul style="font-size:13px;color:var(--muted);line-height:2;padding-left:16px;margin-top:6px">
+      <li><strong>บอก context</strong> — "ไฟล์ Excel ใน data/raw/ มี header: Date, Plant, Value, Pass/Fail"</li>
+      <li><strong>บอก output ที่ต้องการ</strong> — "บันทึกเป็น output/summary.xlsx และแสดงผลใน terminal"</li>
+      <li><strong>บอก constraint</strong> — "ใช้แค่ pandas ไม่ใช้ library อื่น, Python 3.10+"</li>
+      <li><strong>ขอ test ด้วย</strong> — "ทดสอบกับ sample data 5 แถวก่อน แล้วค่อยรันจริง"</li>
+      <li><strong>ขอ error handling</strong> — "เพิ่ม try-except ทุก step พร้อม log ไฟล์"</li>
+    </ul>
+  </div>
+
+  <div class="tip">💡 <span><strong>ใช้ Plan Mode ก่อนเสมอกับงานสำคัญ</strong> — กด <kbd style="background:#fff3;padding:1px 5px;border-radius:3px;font-family:monospace">Shift+Tab</kbd> สองครั้งเพื่อให้ Claude แสดงแผนการทำงานก่อนแก้ไขไฟล์จริง ป้องกันความผิดพลาด</span></div>
+
+  <div class="note">✅ <span><strong>ต่างจาก Claude.ai อย่างไร?</strong> — claude.ai คือ chatbot สำหรับถามตอบและเขียน prompt claude.ai ไม่สามารถแก้ไขไฟล์ในเครื่องได้โดยตรง ส่วน Claude Code ทำงานใน terminal อ่านและแก้ไขไฟล์จริง รันโค้ดจริง เหมาะกับงาน automation และ scripting</span></div>
+
+  <!-- สรุป -->
+  <h2 class="section-title">สรุป Module 05D</h2>
+  <div style="background:var(--ccl);border:1px solid #A5D8F0;border-radius:12px;padding:18px;margin-bottom:24px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+      <div>
+        <div style="font-weight:700;color:#0891B2;margin-bottom:6px">✅ ในโมดูลนี้ทำได้แล้ว</div>
+        <ul style="color:#0E7490;line-height:2;padding-left:16px">
+          <li>ติดตั้งและ login Claude Code</li>
+          <li>ใช้ slash commands พื้นฐาน</li>
+          <li>สร้าง CLAUDE.md สำหรับ project</li>
+          <li>ให้ Claude เขียน Python script</li>
+          <li>วิเคราะห์และปรับปรุงโค้ดเก่า</li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-weight:700;color:#0891B2;margin-bottom:6px">🚀 ขั้นต่อไป</div>
+        <ul style="color:#0E7490;line-height:2;padding-left:16px">
+          <li>เชื่อม Claude Code กับ MCP Server</li>
+          <li>ใช้ร่วมกับ n8n และ Make.com</li>
+          <li>สร้าง automated pipeline เต็มรูปแบบ</li>
+          <li>ใช้ Sub-Agents สำหรับงานซับซ้อน</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a href="module-stitch.html" class="nav-btn">← Module 05C: Stitch</a>
+    <a href="module-claudecode-project.html" class="nav-btn primary">Module 05E: Full Stack Project →</a>
+  </div>
+</main>
+
+<script>
+function copyPrompt(id,btn){
+  var t=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(function(){
+    var o=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';
+    btn.style.background='#1B7A3E';btn.style.color='#fff';
+    setTimeout(function(){btn.textContent=o;btn.style.background='';btn.style.color='';},2000);
+  }).catch(function(){btn.textContent='(เลือกด้วยมือ)';});
+}
+var path=window.location.pathname.split('/').pop();
+document.querySelectorAll('.sidebar a').forEach(function(a){
+  if(a.getAttribute('href')===path)a.classList.add('active');
+});
+</script>
+</body>
+</html>

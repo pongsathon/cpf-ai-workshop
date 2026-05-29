@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claude Code — Full Stack Web Project — CPF AI Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --navy:#0D2137;--blue:#1A4A7A;--sky:#2979C8;
+  --accent:#E85D04;--acl:#FFF3EC;
+  --green:#1B7A3E;--gcl:#EDFAF2;
+  --red:#C0392B;--rcl:#FEF0EE;
+  --amber:#B45309;--acl2:#FFFBEB;
+  --orange:#D35400;--ocl:#FEF3EC;
+  --purple:#6D28D9;--pcl:#F5F3FF;
+  --teal:#0F766E;--tcl:#F0FDFA;
+  --cyan:#0891B2;--ccl:#ECFEFF;
+  --gray50:#F8FAFC;--gray100:#F1F5F9;--gray200:#E2E8F0;
+  --gray400:#94A3B8;--gray600:#475569;--gray800:#1E293B;
+  --text:#1A2332;--muted:#5A6B7E;--sidebar:220px;
+  --font:'Sarabun',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--text);background:#fff;
+     display:flex;min-height:100vh;font-size:15px;line-height:1.7}
+.sidebar{width:var(--sidebar);background:var(--navy);position:fixed;
+  top:0;left:0;height:100vh;overflow-y:auto;flex-shrink:0;z-index:100}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo .brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.sidebar-section{padding:10px 0 4px 18px;font-size:10px;color:rgba(255,255,255,.35);
+  text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:8px 18px;
+  font-size:13px;color:rgba(255,255,255,.65);text-decoration:none;
+  border-left:3px solid transparent;transition:all .15s}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sidebar a.active{color:#fff;background:rgba(41,121,200,.25);border-left-color:var(--sky)}
+.sidebar a .mn{font-size:10px;background:rgba(255,255,255,.12);
+  border-radius:4px;padding:1px 6px;font-family:var(--mono)}
+.main{margin-left:var(--sidebar);flex:1;max-width:820px;padding:40px 48px 80px}
+.page-header{border-bottom:2px solid var(--cyan);padding-bottom:20px;margin-bottom:36px}
+.module-num{font-size:11px;font-weight:600;color:var(--cyan);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:6px}
+.page-title{font-size:30px;font-weight:700;color:var(--navy);line-height:1.2}
+.page-desc{font-size:15px;color:var(--muted);margin-top:8px;line-height:1.6}
+.meta-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+  border-radius:20px;font-size:12px;font-weight:500;border:1px solid}
+.section-title{font-size:18px;font-weight:700;color:var(--navy);
+  margin:36px 0 18px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gray200)}
+/* Phase header */
+.phase{background:var(--navy);color:#fff;border-radius:10px;
+  padding:14px 20px;margin:32px 0 16px;display:flex;align-items:center;gap:12px}
+.phase-num{width:36px;height:36px;border-radius:50%;background:var(--cyan);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:15px;flex-shrink:0}
+.phase-info .phase-label{font-size:10px;color:rgba(255,255,255,.5);
+  text-transform:uppercase;letter-spacing:.1em}
+.phase-info .phase-name{font-size:16px;font-weight:700}
+.phase-time{margin-left:auto;font-size:11px;background:rgba(255,255,255,.15);
+  padding:3px 10px;border-radius:20px;color:rgba(255,255,255,.8)}
+/* Steps */
+.step{background:#fff;border:1px solid var(--gray200);border-radius:12px;
+  margin-bottom:14px;overflow:hidden;transition:border-color .2s}
+.step:hover{border-color:var(--cyan)}
+.step-header{display:flex;align-items:flex-start;gap:14px;padding:16px 20px}
+.step-num{width:30px;height:30px;border-radius:50%;background:var(--cyan);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px}
+.step-info{flex:1}
+.step-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.step-sub{font-size:12px;color:var(--muted)}
+.step-body{padding:0 20px 16px 64px}
+/* Code/Terminal */
+.screen-box{background:#0D1117;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.screen-head{background:#21262D;padding:8px 14px;display:flex;align-items:center;gap:6px}
+.dot-r{width:10px;height:10px;border-radius:50%;background:#FF5F57}
+.dot-y{width:10px;height:10px;border-radius:50%;background:#FFBD2E}
+.dot-g{width:10px;height:10px;border-radius:50%;background:#28CA41}
+.screen-lbl{font-size:11px;color:#8B949E;margin-left:6px;font-family:var(--mono)}
+.screen-lbl-r{color:#FF8C8C}
+.screen-body{padding:14px 18px;font-size:12px;color:#C9D1D9;
+  font-family:var(--mono);line-height:1.9;white-space:pre;overflow-x:auto}
+/* Prompt */
+.prompt-box{border:1px solid #A5D8F0;border-radius:10px;background:#ECFEFF;
+  margin-bottom:12px;overflow:hidden}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:#CFFAFE;border-bottom:1px solid #A5D8F0}
+.prompt-label{font-size:10px;font-weight:700;color:var(--cyan);
+  text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;
+  border:1px solid #67C4DC;background:#fff;color:var(--cyan);font-weight:500;
+  font-family:var(--font)}
+.copy-btn:hover{background:var(--cyan);color:#fff}
+.prompt-body{padding:14px 16px;font-size:12px;line-height:1.8;
+  white-space:pre-wrap;font-family:var(--mono);color:var(--gray800)}
+/* Callouts */
+.tip{background:var(--acl2);border-left:4px solid var(--accent);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--amber);margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
+.note{background:var(--gcl);border-left:4px solid var(--green);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--green);margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
+.warn{background:var(--rcl);border-left:4px solid var(--red);
+  border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;
+  color:var(--red);margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
+.info-box{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:13px}
+.info-box h4{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px}
+/* Output */
+.output-box{border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;
+  background:var(--ccl);padding:14px 16px;margin-bottom:12px}
+.output-label{font-size:10px;font-weight:700;color:var(--cyan);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.output-body{font-size:12px;line-height:1.8;white-space:pre-wrap;
+  color:var(--gray800);font-family:var(--mono)}
+/* File tree */
+.file-tree{background:#0D1117;border-radius:10px;padding:16px 18px;
+  font-family:var(--mono);font-size:12px;color:#C9D1D9;
+  line-height:2;margin-bottom:12px}
+.ft-dir{color:#79C0FF}
+.ft-file{color:#C9D1D9}
+.ft-new{color:#3FB950}
+.ft-comment{color:#8B949E}
+/* Progress tracker */
+.progress-bar{background:var(--gray50);border:1px solid var(--gray200);
+  border-radius:10px;padding:16px 20px;margin-bottom:24px}
+.progress-title{font-size:12px;font-weight:600;color:var(--navy);
+  margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em}
+.progress-steps{display:flex;gap:0;align-items:center}
+.prog-step{flex:1;text-align:center;position:relative}
+.prog-step:not(:last-child)::after{content:'';position:absolute;
+  top:14px;left:50%;width:100%;height:2px;background:var(--gray200);z-index:0}
+.prog-dot{width:28px;height:28px;border-radius:50%;margin:0 auto 6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;position:relative;z-index:1}
+.prog-dot.done{background:var(--green);color:#fff}
+.prog-dot.active{background:var(--cyan);color:#fff}
+.prog-dot.todo{background:var(--gray200);color:var(--gray400)}
+.prog-label{font-size:10px;color:var(--muted);line-height:1.3}
+/* Stack badges */
+.stack-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.stack-badge{display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid}
+/* Checklist */
+.checklist{background:var(--gray50);border-radius:8px;padding:12px 16px;
+  list-style:none;margin-bottom:12px}
+.checklist li{display:flex;gap:10px;padding:5px 0;font-size:13px;
+  border-bottom:1px solid var(--gray200);align-items:flex-start}
+.checklist li:last-child{border-bottom:none}
+.ch-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+/* Nav */
+@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative}
+  .main{margin-left:0;padding:24px 20px 60px}body{flex-direction:column}
+  .progress-steps{flex-direction:column}}
+.nav-footer{display:flex;justify-content:space-between;
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--gray200)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+  border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;
+  border:1px solid var(--gray200);color:var(--navy);transition:all .15s}
+.nav-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav-btn.primary{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+.nav-btn.primary:hover{background:var(--navy)}
+</style>
+</head>
+<body>
+
+<nav class="sidebar"><div class="sidebar-logo"><div class="brand">🐔 CPF AI Workshop</div><div class="sub">คู่มือประกอบการสอน 2569</div></div><div class="sidebar-section">Modules</div><a href="index.html"><span class="mn">🏠</span>ภาพรวม Workshop</a><a href="module1.html"><span class="mn">01</span>AI Agent คืออะไร + MCP</a><a href="module2.html"><span class="mn">02</span>Claude.ai — เริ่มต้น</a><a href="module3.html"><span class="mn">03</span>Workshop Labs</a><a href="module4.html"><span class="mn">04</span>Dify — Chatbot Builder</a><a href="module4b.html"><span class="mn">04B</span>n8n Cloud + LLM</a><a href="module5.html"><span class="mn">05</span>n8n — Local Install</a><a href="module-multiagent.html"><span class="mn">05B</span>Multi-Agent Workflows</a><a href="module-stitch.html"><span class="mn">05C</span>Stitch + Antigravity 🆕</a><a href="module-claudecode.html"><span class="mn">05D</span>Claude Code</a><a href="module-claudecode-project.html"><span class="mn">05E</span>Full Stack Project 🆕</a><a href="module6.html"><span class="mn">06</span>MCP Protocol</a><a href="module7.html"><span class="mn">07</span>Capstone Project</a></nav>
+
+<main class="main">
+  <header class="page-header">
+    <div class="module-num">MODULE 05E &nbsp;·&nbsp; 90 นาที &nbsp;·&nbsp; Hands-on Project</div>
+    <h1 class="page-title">Claude Code — สร้าง Full Stack Web App จริง</h1>
+    <p class="page-desc">สร้าง <strong>CPF Incident Tracker</strong> — ระบบรายงานและติดตามปัญหาคุณภาพในโรงงาน ตั้งแต่ต้นจนเปิดใช้งานได้จริง โดยใช้ Claude Code เป็น AI Developer คู่คิด</p>
+    <div class="meta-pills">
+      <span class="pill" style="background:#0891B215;border-color:#0891B240;color:#0891B2">⏱ 90 นาที</span>
+      <span class="pill" style="background:#1B7A3E15;border-color:#1B7A3E40;color:#1B7A3E">Node.js + Express</span>
+      <span class="pill" style="background:#6D28D915;border-color:#6D28D940;color:#6D28D9">SQLite Database</span>
+      <span class="pill" style="background:#0D213715;border-color:#0D213740;color:#0D2137">Full Stack</span>
+    </div>
+  </header>
+
+  <!-- Project overview -->
+  <div style="background:linear-gradient(135deg,#0D2137 0%,#1A4A7A 100%);border-radius:14px;padding:22px 24px;margin-bottom:24px;color:#fff">
+    <div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">🎯 เป้าหมาย Project</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px">CPF Incident Tracker 🏭</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.75);margin-bottom:16px">ระบบ Web App สำหรับพนักงานโรงงาน รายงาน ติดตาม และจัดการ Incident คุณภาพ พร้อม Dashboard สรุปสถานะ</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+      <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">📝</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.8)">กรอก Incident Form</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">📊</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.8)">Dashboard & ตาราง</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">🔍</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.8)">Filter & ค้นหา</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">✅</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.8)">อัปเดตสถานะ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="info-box">
+    <h4>🛠 Tech Stack ที่ใช้ในโปรเจกต์นี้</h4>
+    <div class="stack-row">
+      <span class="stack-badge" style="background:#F0FFF4;border-color:#86EFAC;color:#1B7A3E">🟢 Node.js — Backend Runtime</span>
+      <span class="stack-badge" style="background:#FFF3EC;border-color:#FCA85E;color:#D35400">⚡ Express.js — Web Framework</span>
+      <span class="stack-badge" style="background:#F0F6FF;border-color:#A0BBE8;color:#1A4A7A">🗄 SQLite — Database (ไม่ต้อง setup)</span>
+      <span class="stack-badge" style="background:#F5F3FF;border-color:#C4B5FD;color:#6D28D9">🎨 Tailwind CSS CDN — Styling</span>
+      <span class="stack-badge" style="background:#ECFEFF;border-color:#A5D8F0;color:#0891B2">⚙️ Vanilla JS — Frontend Logic</span>
+    </div>
+    <p style="font-size:12px;color:var(--muted)">เลือก stack นี้เพราะ: ติดตั้งง่าย ไม่ต้อง configure database server ทำงานได้ในเครื่องเดียว Claude Code จัดการได้ดีมาก</p>
+  </div>
+
+  <!-- Progress tracker -->
+  <div class="progress-bar">
+    <div class="progress-title">แผนการสร้าง — 6 Phase</div>
+    <div class="progress-steps">
+      <div class="prog-step"><div class="prog-dot done">1</div><div class="prog-label">Setup<br>โปรเจกต์</div></div>
+      <div class="prog-step"><div class="prog-dot done">2</div><div class="prog-label">Backend<br>Express API</div></div>
+      <div class="prog-step"><div class="prog-dot done">3</div><div class="prog-label">Database<br>SQLite</div></div>
+      <div class="prog-step"><div class="prog-dot done">4</div><div class="prog-label">Frontend<br>UI หน้าจอ</div></div>
+      <div class="prog-step"><div class="prog-dot done">5</div><div class="prog-label">เชื่อม<br>Front+Back</div></div>
+      <div class="prog-step"><div class="prog-dot done">6</div><div class="prog-label">Test &amp;<br>Deploy</div></div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 1 ===== -->
+  <div class="phase">
+    <div class="phase-num">1</div>
+    <div class="phase-info">
+      <div class="phase-label">Phase 1</div>
+      <div class="phase-name">Setup โปรเจกต์และ CLAUDE.md</div>
+    </div>
+    <div class="phase-time">⏱ 10 นาที</div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <div class="step-title">สร้างโฟลเดอร์และเข้า Claude Code</div>
+        <div class="step-sub">เตรียม workspace แล้วให้ Claude วางแผน project structure</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="screen-box">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Terminal</span></div>
+        <div class="screen-body"><span style="color:#58A6FF">$</span> mkdir cpf-incident-tracker
+<span style="color:#58A6FF">$</span> cd cpf-incident-tracker
+<span style="color:#58A6FF">$</span> claude</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-info">
+        <div class="step-title">บอก Claude วางแผน Project ทั้งหมด (Plan Mode)</div>
+        <div class="step-sub">ให้ Claude ออกแบบ architecture ก่อนลงมือสร้าง</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code (Plan Mode — กด Shift+Tab ก่อน)</span>
+          <button class="copy-btn" onclick="copyPrompt('p1s2','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p1s2">ฉันต้องการสร้าง Web App ชื่อ "CPF Incident Tracker" สำหรับโรงงาน CPF
+
+Features ที่ต้องการ:
+1. Form กรอก Incident: วันที่, โรงงาน, Line, ประเภทปัญหา, รายละเอียด, ความรุนแรง (Low/Medium/High)
+2. หน้า Dashboard: ตารางแสดง Incident ทั้งหมด, Filter ตามโรงงานและสถานะ
+3. อัปเดตสถานะ: Open → In Progress → Resolved
+4. สถิติ: จำนวน Incident แยกตามสถานะและความรุนแรง
+
+Tech Stack: Node.js + Express + SQLite (better-sqlite3) + HTML + Tailwind CSS CDN + Vanilla JS
+
+ช่วยวางแผน:
+- โครงสร้างโฟลเดอร์ทั้งหมด
+- Database schema (table + columns)
+- API endpoints ที่จำเป็น
+- ลำดับการสร้าง step by step</div>
+      </div>
+
+      <div class="output-box">
+        <div class="output-label">Claude จะตอบกลับประมาณนี้</div>
+        <div class="output-body">📁 โครงสร้างโฟลเดอร์ที่แนะนำ:
+cpf-incident-tracker/
+├── server.js          ← Express server หลัก
+├── database.js        ← SQLite setup & queries
+├── package.json
+├── public/
+│   ├── index.html     ← หน้า Dashboard
+│   ├── report.html    ← หน้ากรอก Incident
+│   └── app.js         ← Frontend JavaScript
+└── CLAUDE.md
+
+🗄 Database Schema:
+incidents table:
+  id, date, plant, line, type, description,
+  severity, status, created_at, updated_at
+
+🔌 API Endpoints:
+  GET    /api/incidents        ← ดึงรายการทั้งหมด
+  POST   /api/incidents        ← สร้าง Incident ใหม่
+  PATCH  /api/incidents/:id    ← อัปเดตสถานะ
+  GET    /api/stats            ← ดึงสถิติ Dashboard</div>
+      </div>
+
+      <div class="note">✅ <span>อ่านแผนของ Claude ให้ละเอียดก่อน ถ้า OK กด Enter เพื่ออนุมัติ หรือแก้ไขแผนก่อน</span></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div class="step-info">
+        <div class="step-title">สร้าง CLAUDE.md — บอก Context ให้ Claude จำไว้</div>
+        <div class="step-sub">ทำครั้งเดียว Claude จะจำ context ทุก session</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p1s3','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p1s3">สร้างไฟล์ CLAUDE.md สำหรับโปรเจกต์นี้ ให้ครอบคลุม:
+- ชื่อโปรเจกต์และวัตถุประสงค์
+- Tech stack ที่ใช้
+- โครงสร้างโฟลเดอร์ที่วางแผนไว้
+- คำสั่ง npm run dev เพื่อรัน server
+- port 3000
+- encoding ภาษาไทย UTF-8
+- ข้อตกลง: comment ภาษาไทย, error handling ทุก endpoint</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 2 ===== -->
+  <div class="phase">
+    <div class="phase-num">2</div>
+    <div class="phase-info">
+      <div class="phase-label">Phase 2</div>
+      <div class="phase-name">สร้าง Backend — Express Server + API</div>
+    </div>
+    <div class="phase-time">⏱ 15 นาที</div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <div class="step-title">สร้าง package.json และติดตั้ง Dependencies</div>
+        <div class="step-sub">ให้ Claude จัดการ npm ทั้งหมด</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p2s1','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p2s1">สร้าง package.json สำหรับโปรเจกต์นี้ แล้วติดตั้ง dependencies:
+- express (web framework)
+- better-sqlite3 (database)
+- cors (อนุญาต frontend เรียก API)
+- nodemon (dev: auto-restart เมื่อแก้ไขไฟล์)
+
+เพิ่ม scripts:
+- "dev": "nodemon server.js"
+- "start": "node server.js"
+
+แล้วรัน npm install ให้เลย</div>
+      </div>
+
+      <div class="screen-box">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Claude Code จะรันให้</span></div>
+        <div class="screen-body"><span style="color:#3FB950">✓ Created</span> package.json
+<span style="color:#3FB950">✓ Running</span> npm install
+
+added 89 packages in 8s
+<span style="color:#3FB950">✓ Done</span> — พร้อมใช้งาน</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-info">
+        <div class="step-title">สร้าง Express Server หลัก (server.js)</div>
+        <div class="step-sub">Claude จะเขียน server พร้อม API endpoints ครบทุก route</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p2s2','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p2s2">สร้าง server.js — Express server ที่มี:
+
+1. Setup express, cors, json middleware
+2. serve static files จาก /public
+3. API Routes ครบทุก endpoint:
+
+   GET  /api/incidents
+     - รับ query params: plant, status, severity (filter)
+     - return: array of incidents เรียงจากใหม่ไปเก่า
+
+   POST /api/incidents
+     - รับ body: date, plant, line, type, description, severity
+     - validate ว่าไม่มี field ว่าง
+     - return: incident ที่สร้างใหม่
+
+   PATCH /api/incidents/:id/status
+     - รับ body: { status: "Open"|"In Progress"|"Resolved" }
+     - return: incident ที่อัปเดตแล้ว
+
+   GET /api/stats
+     - return: count แยกตาม status และ severity
+
+4. error handling ทุก route
+5. รัน port 3000
+6. log ข้อความ "🚀 Server พร้อมแล้ว: http://localhost:3000" เมื่อเริ่ม</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 3 ===== -->
+  <div class="phase">
+    <div class="phase-num">3</div>
+    <div class="phase-info">
+      <div class="phase-label">Phase 3</div>
+      <div class="phase-name">สร้าง Database — SQLite Schema + Queries</div>
+    </div>
+    <div class="phase-time">⏱ 10 นาที</div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <div class="step-title">สร้าง database.js — Schema และ Query Functions</div>
+        <div class="step-sub">Claude จะออกแบบ table และเขียน functions ทุกอย่าง</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p3s1','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p3s1">สร้าง database.js ที่มี:
+
+1. เชื่อมต่อ SQLite ไฟล์ชื่อ incidents.db
+2. สร้าง table incidents ถ้ายังไม่มี:
+   - id INTEGER PRIMARY KEY AUTOINCREMENT
+   - date TEXT NOT NULL (รูปแบบ YYYY-MM-DD)
+   - plant TEXT NOT NULL (เช่น "โรงงาน A", "โรงงาน B")
+   - line TEXT NOT NULL (เช่น "Line 1", "Line 2")
+   - type TEXT NOT NULL (เช่น "คุณภาพสินค้า", "เครื่องจักร", "ความปลอดภัย")
+   - description TEXT NOT NULL
+   - severity TEXT NOT NULL (Low/Medium/High)
+   - status TEXT DEFAULT 'Open' (Open/In Progress/Resolved)
+   - created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+   - updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+
+3. Export functions:
+   - getAllIncidents(filters) — รองรับ filter plant, status, severity
+   - createIncident(data)
+   - updateStatus(id, status)
+   - getStats()
+
+4. ใส่ sample data 5 รายการ (สำหรับ demo)
+   แทรกแค่ถ้า table ว่างเปล่า
+
+comment อธิบายทุก function เป็นภาษาไทย</div>
+      </div>
+
+      <div class="output-box">
+        <div class="output-label">ผลลัพธ์ที่ได้</div>
+        <div class="output-body"><span style="color:#3FB950">✓ Created</span> database.js
+<span style="color:#3FB950">✓ Created</span> incidents.db
+<span style="color:#3FB950">✓ Table</span> incidents สร้างแล้ว
+<span style="color:#3FB950">✓ Inserted</span> 5 sample records</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-info">
+        <div class="step-title">ทดสอบ Backend ด้วยคำสั่งเดียว</div>
+        <div class="step-sub">ให้ Claude รัน server และทดสอบทุก API endpoint</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p3s2','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p3s2">รัน server ในพื้นหลัง แล้วทดสอบทุก API endpoint ด้วย curl:
+1. GET /api/incidents — ต้องได้ 5 records
+2. POST /api/incidents — สร้าง incident ทดสอบ
+3. GET /api/stats — ต้องได้ counts แต่ละ status
+4. PATCH /api/incidents/1/status — เปลี่ยนเป็น "In Progress"
+แสดงผลลัพธ์ทุกข้อ และบอกว่า PASS หรือ FAIL</div>
+      </div>
+
+      <div class="screen-box">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">ผลทดสอบที่คาดหวัง</span></div>
+        <div class="screen-body"><span style="color:#3FB950">✅ PASS</span> GET  /api/incidents      → 5 records
+<span style="color:#3FB950">✅ PASS</span> POST /api/incidents      → id: 6 created
+<span style="color:#3FB950">✅ PASS</span> GET  /api/stats          → {Open:4, InProgress:1}
+<span style="color:#3FB950">✅ PASS</span> PATCH /api/incidents/1   → status: "In Progress"
+
+<span style="color:#3FB950">🎉 Backend พร้อมใช้งาน 4/4 endpoints ผ่านทั้งหมด</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 4 ===== -->
+  <div class="phase">
+    <div class="phase-num">4</div>
+    <div class="phase-info">
+      <div class="phase-label">Phase 4</div>
+      <div class="phase-name">สร้าง Frontend — หน้า Dashboard และ Form</div>
+    </div>
+    <div class="phase-time">⏱ 20 นาที</div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <div class="step-title">สร้างหน้า Dashboard (public/index.html)</div>
+        <div class="step-sub">หน้าหลักแสดงตาราง Incident + สถิติ + ปุ่ม Filter</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p4s1','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p4s1">สร้าง public/index.html — หน้า Dashboard ที่มี:
+
+Header:
+- ชื่อ "🏭 CPF Incident Tracker" พร้อม logo emoji
+- ปุ่ม "+ รายงาน Incident ใหม่" (ลิงก์ไป report.html)
+
+Stats Cards (4 การ์ด):
+- ทั้งหมด | Open | In Progress | Resolved
+- แต่ละการ์ดมีตัวเลขใหญ่ สีต่างกัน
+
+Filter Bar:
+- Dropdown เลือกโรงงาน (ทั้งหมด / โรงงาน A / โรงงาน B / โรงงาน C)
+- Dropdown เลือกสถานะ
+- Dropdown เลือกความรุนแรง
+- ปุ่ม "รีเซ็ต"
+
+ตารางแสดง Incident:
+- Columns: วันที่, โรงงาน, Line, ประเภท, ความรุนแรง, สถานะ, การดำเนินการ
+- ความรุนแรง High = แดง, Medium = เหลือง, Low = เขียว
+- สถานะมีสี: Open=แดง, In Progress=เหลือง, Resolved=เขียว
+- ปุ่ม "อัปเดตสถานะ" ในแต่ละแถว
+
+ใช้ Tailwind CSS CDN, ภาษาไทย, responsive
+ข้อมูลดึงจาก /api/incidents ผ่าน fetch()</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-info">
+        <div class="step-title">สร้างหน้ากรอก Incident (public/report.html)</div>
+        <div class="step-sub">Form สวยงาม พร้อม validation และ feedback</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p4s2','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p4s2">สร้าง public/report.html — หน้ากรอก Incident ที่มี:
+
+Form Fields (ทั้งหมด required):
+- วันที่เกิดเหตุ (date picker, default = วันนี้)
+- โรงงาน (dropdown: โรงงาน A/B/C)
+- Line การผลิต (dropdown: Line 1-5)
+- ประเภทปัญหา (dropdown: คุณภาพสินค้า / เครื่องจักรขัดข้อง / ความปลอดภัย / อื่นๆ)
+- ความรุนแรง (radio buttons: Low 🟢 / Medium 🟡 / High 🔴)
+- รายละเอียด (textarea, min 20 ตัวอักษร)
+- ชื่อผู้รายงาน (text input)
+
+Behavior:
+- validate ทุก field ก่อน submit
+- แสดง error message ใต้ field ที่ผิด
+- เมื่อ submit สำเร็จ: แสดง popup "✅ บันทึกสำเร็จ" แล้ว redirect ไป index.html หลัง 2 วินาที
+- ปุ่ม "← กลับ Dashboard" ด้านบน
+
+ใช้ Tailwind CSS CDN, ภาษาไทย, สวยงาม</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div class="step-info">
+        <div class="step-title">สร้าง JavaScript Logic (public/app.js)</div>
+        <div class="step-sub">Code เชื่อม Frontend กับ API ทั้งหมด</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p4s3','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p4s3">สร้าง public/app.js — JavaScript สำหรับ Dashboard ที่มี:
+
+Functions ทุกตัว:
+1. loadStats() — ดึง /api/stats แล้วอัปเดต 4 การ์ด
+2. loadIncidents(filters) — ดึง /api/incidents ตาม filter แล้วสร้าง table rows
+3. updateStatus(id) — เปิด popup เลือกสถานะใหม่ แล้ว PATCH /api/incidents/:id/status
+4. applyFilters() — อ่านค่า dropdowns แล้วเรียก loadIncidents()
+5. resetFilters() — reset dropdowns แล้วโหลดข้อมูลใหม่
+
+Error Handling:
+- ถ้า fetch ล้มเหลว แสดง "⚠️ ไม่สามารถโหลดข้อมูลได้ กรุณารีเฟรช"
+- Loading spinner ระหว่างโหลด
+
+เรียก loadStats() และ loadIncidents() ทันทีที่หน้าโหลด
+comment ภาษาไทยทุก function</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 5 ===== -->
+  <div class="phase">
+    <div class="phase-num">5</div>
+    <div class="phase-info">
+      <div class="phase-label">Phase 5</div>
+      <div class="phase-name">ทดสอบ End-to-End และแก้ Bug</div>
+    </div>
+    <div class="phase-time">⏱ 20 นาที</div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <div class="step-title">รัน Server และเปิด Browser</div>
+        <div class="step-sub">ตรวจสอบว่าทุกหน้าทำงานได้จริง</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p5s1','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p5s1">รัน "npm run dev" แล้วบอกสถานะ server
+จากนั้นแสดง checklist ว่าโปรเจกต์พร้อม deploy หรือยัง</div>
+      </div>
+
+      <div class="screen-box">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Terminal — ผลลัพธ์</span></div>
+        <div class="screen-body"><span style="color:#58A6FF">$</span> npm run dev
+
+[nodemon] starting `node server.js`
+<span style="color:#3FB950">🚀 Server พร้อมแล้ว: http://localhost:3000</span>
+<span style="color:#3FB950">🗄 Database: incidents.db (5 records)</span></div>
+      </div>
+
+      <div class="info-box">
+        <h4>🧪 Checklist ทดสอบเอง (เปิด browser ไปที่ localhost:3000)</h4>
+        <ul class="checklist">
+          <li><span class="ch-icon">☐</span><span>หน้า Dashboard โหลดได้ แสดงตาราง 5 rows</span></li>
+          <li><span class="ch-icon">☐</span><span>Stats Cards แสดงตัวเลขถูกต้อง</span></li>
+          <li><span class="ch-icon">☐</span><span>กด Filter ตามโรงงาน → ตารางกรองข้อมูล</span></li>
+          <li><span class="ch-icon">☐</span><span>กดปุ่ม "+ รายงาน Incident ใหม่" → ไปหน้า form</span></li>
+          <li><span class="ch-icon">☐</span><span>กรอก form ไม่ครบ → เห็น error message</span></li>
+          <li><span class="ch-icon">☐</span><span>กรอก form ครบ → บันทึกสำเร็จ → กลับ Dashboard</span></li>
+          <li><span class="ch-icon">☐</span><span>Incident ใหม่ปรากฏในตาราง</span></li>
+          <li><span class="ch-icon">☐</span><span>กดปุ่มอัปเดตสถานะ → สีเปลี่ยน</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-info">
+        <div class="step-title">วิธีแก้ Bug กับ Claude Code</div>
+        <div class="step-sub">เมื่อเจอปัญหา — ให้ Claude วิเคราะห์และแก้ไขทันที</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="tip">💡 <span><strong>วิธีรายงาน Bug ให้ Claude แก้ได้ถูก</strong> — บอก: ทำอะไร → เห็นอะไร → คาดหวังอะไร</span></div>
+
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">ตัวอย่าง Bug Report Prompt</span>
+          <button class="copy-btn" onclick="copyPrompt('bug1','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="bug1">เจอปัญหา: เมื่อกด Filter ตามโรงงาน ตารางยังแสดงทุก incident อยู่
+ขั้นตอนที่ทำ: เลือก "โรงงาน A" จาก dropdown แล้วกดปุ่ม Filter
+สิ่งที่เห็น: ตารางยังแสดง 5 rows เหมือนเดิม
+สิ่งที่คาดหวัง: ตารางควรแสดงเฉพาะ incident ของโรงงาน A
+
+error ใน console: [วาง error message ถ้ามี]
+
+ช่วยหาสาเหตุและแก้ไขด้วย</div>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">ตัวอย่าง UI Bug Prompt</span>
+          <button class="copy-btn" onclick="copyPrompt('bug2','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="bug2">บนมือถือ (หน้าจอแคบ) ตารางล้นออกนอกหน้าจอ
+ช่วยทำให้ตาราง responsive โดย:
+- บนมือถือ: แสดงแบบการ์ดแทนตาราง
+- แต่ละการ์ดแสดง: วันที่, โรงงาน, ประเภท, สถานะ, ปุ่มอัปเดต</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 6 ===== -->
+  <div class="phase">
+    <div class="phase-num">6</div>
+    <div class="phase-info">
+      <div class="phase-label">Phase 6</div>
+      <div class="phase-name">เพิ่ม Features + Deploy</div>
+    </div>
+    <div class="phase-time">⏱ 15 นาที</div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <div class="step-title">เพิ่ม Features พิเศษ (ทำเมื่อมีเวลา)</div>
+        <div class="step-sub">ให้ Claude ต่อยอด features ด้วย prompt เดียว</div>
+      </div>
+    </div>
+    <div class="step-body">
+
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">🌟 เพิ่ม Export Excel</span>
+          <button class="copy-btn" onclick="copyPrompt('feat1','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="feat1">เพิ่มปุ่ม "📥 Export Excel" ใน Dashboard:
+- ใช้ library xlsx (SheetJS)
+- Export ข้อมูลที่กำลังแสดงอยู่ (ตาม filter ที่เลือก)
+- ชื่อไฟล์: CPF_Incidents_YYYYMMDD.xlsx
+- รวม header ภาษาไทย: วันที่, โรงงาน, Line, ประเภท, ความรุนแรง, สถานะ
+- แสดง loading text ระหว่าง export</div>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">📊 เพิ่ม Chart สถิติ</span>
+          <button class="copy-btn" onclick="copyPrompt('feat2','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="feat2">เพิ่ม Chart ใน Dashboard section สถิติ:
+- ใช้ Chart.js CDN
+- Bar Chart: Incident แต่ละโรงงาน แยกสีตาม severity
+- Doughnut Chart: สัดส่วน Open / In Progress / Resolved
+- อัปเดต Chart อัตโนมัติเมื่อ filter เปลี่ยน</div>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-head">
+          <span class="prompt-label">🔔 เพิ่ม LINE Notify Alert</span>
+          <button class="copy-btn" onclick="copyPrompt('feat3','this')">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="feat3">เมื่อมีการสร้าง Incident ที่ severity = "High":
+ส่ง LINE Notify ไปยัง token ที่กำหนดใน .env
+
+ข้อความ:
+🚨 [CPF Alert] Incident ความรุนแรงสูง
+📍 โรงงาน: {plant} | Line: {line}
+📋 ประเภท: {type}
+📝 {description}
+⏰ {date}
+
+ติดตั้ง axios และสร้าง .env สำหรับ LINE_TOKEN
+ซ่อน token ใน .gitignore</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-info">
+        <div class="step-title">Deploy บน Vercel (ฟรี)</div>
+        <div class="step-sub">จาก localhost สู่ URL จริงที่ทีมเข้าถึงได้ — vercel.com</div>
+      </div>
+    </div>
+    <div class="step-body">
+
+      <!-- Vercel note -->
+      <div style="background:#ECFEFF;border:1px solid #A5D8F0;border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px">
+        <div style="font-weight:700;color:#0891B2;margin-bottom:6px">🔼 Vercel คืออะไร?</div>
+        <div style="color:#0E7490;line-height:1.7">Platform deploy ฟรีที่นิยมที่สุด รองรับ Node.js + Express ผ่าน Serverless Functions — ได้ HTTPS URL ทันทีหลัง push GitHub</div>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="background:#fff;border:1px solid #A5D8F0;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;color:#0891B2">✅ ฟรี (Hobby plan)</span>
+          <span style="background:#fff;border:1px solid #A5D8F0;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;color:#0891B2">✅ HTTPS อัตโนมัติ</span>
+          <span style="background:#fff;border:1px solid #A5D8F0;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;color:#0891B2">✅ Deploy จาก GitHub</span>
+          <span style="background:#FFF3EC;border:1px solid #FCA85E;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;color:#D35400">⚠️ SQLite ข้อมูลไม่ persist ระหว่าง deploy ใหม่</span>
+        </div>
+      </div>
+
+      <!-- Step 1: Claude Code เตรียมไฟล์ -->
+      <div style="font-size:13px;font-weight:700;color:#0D2137;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        <span style="background:#0891B2;color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">1</span>
+        ให้ Claude Code เตรียมไฟล์
+      </div>
+      <div class="prompt-box" style="margin-bottom:14px">
+        <div class="prompt-head">
+          <span class="prompt-label">💬 พิมพ์ใน Claude Code</span>
+          <button class="copy-btn" onclick="copyPrompt('p6s2',this)">คัดลอก</button>
+        </div>
+        <div class="prompt-body" id="p6s2">เตรียม project สำหรับ deploy บน Vercel:
+
+1. สร้าง vercel.json สำหรับ Express app:
+   {
+     "version": 2,
+     "builds": [{ "src": "server.js", "use": "@vercel/node" }],
+     "routes": [{ "src": "/(.*)", "dest": "server.js" }]
+   }
+
+2. สร้าง .gitignore (ไม่รวม node_modules, incidents.db, .env)
+
+3. ตรวจสอบ server.js ใช้ PORT จาก env:
+   const PORT = process.env.PORT || 3000
+
+4. ตรวจสอบ package.json มี "start": "node server.js"
+
+5. สร้าง README.md
+
+6. Init git แล้ว commit ทั้งหมด:
+   git init && git add . && git commit -m "Initial: CPF Incident Tracker"</div>
+      </div>
+
+      <div class="screen-box" style="margin-bottom:14px">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Claude Code จะรันให้</span></div>
+        <div class="screen-body"><span style="color:#3FB950">✓ Created</span> vercel.json
+<span style="color:#3FB950">✓ Created</span> .gitignore
+<span style="color:#3FB950">✓ Updated</span> server.js (PORT from env)
+<span style="color:#3FB950">✓ Created</span> README.md
+<span style="color:#3FB950">✓ Running</span> git init && git add . && git commit -m "Initial: CPF Incident Tracker"
+<span style="color:#3FB950">✓ Done</span> — พร้อม deploy บน Vercel</div>
+      </div>
+
+      <!-- Step 2: Push to GitHub -->
+      <div style="font-size:13px;font-weight:700;color:#0D2137;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        <span style="background:#0891B2;color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">2</span>
+        Push ขึ้น GitHub
+      </div>
+      <ul class="inst-list" style="margin-bottom:14px">
+        <li><span class="n" style="background:#0891B2">①</span><span>เปิด <strong>github.com</strong> → Login → กด <strong>New repository</strong></span></li>
+        <li><span class="n" style="background:#0891B2">②</span><span>ตั้งชื่อ <code>cpf-incident-tracker</code> → <strong>Private</strong> → Create</span></li>
+        <li><span class="n" style="background:#0891B2">③</span><span>Copy คำสั่งที่ GitHub แสดง แล้วรันใน terminal (หรือพิมพ์ใน Claude Code)</span></li>
+      </ul>
+      <div class="screen-box" style="margin-bottom:14px">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Terminal</span></div>
+        <div class="screen-body"><span style="color:#58A6FF">$</span> git remote add origin https://github.com/yourname/cpf-incident-tracker.git
+<span style="color:#58A6FF">$</span> git branch -M main
+<span style="color:#58A6FF">$</span> git push -u origin main
+<span style="color:#3FB950">✓ Pushed to GitHub</span></div>
+      </div>
+
+      <!-- Step 3: Deploy on Vercel -->
+      <div style="font-size:13px;font-weight:700;color:#0D2137;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        <span style="background:#0891B2;color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">3</span>
+        Deploy บน Vercel
+      </div>
+      <ul class="inst-list" style="margin-bottom:14px">
+        <li><span class="n" style="background:#0891B2">①</span><span>เปิด <a href="https://vercel.com" target="_blank" style="color:#0891B2;font-weight:600">vercel.com</a> → กด <strong>Sign Up</strong> → Continue with GitHub</span></li>
+        <li><span class="n" style="background:#0891B2">②</span><span>กด <strong>Add New Project</strong> → Import Git Repository</span></li>
+        <li><span class="n" style="background:#0891B2">③</span><span>เลือก repo <code>cpf-incident-tracker</code> → กด <strong>Import</strong></span></li>
+        <li><span class="n" style="background:#0891B2">④</span><span>Framework Preset: <strong>Other</strong> | Root Directory: <code>./</code> (ปล่อยว่าง)</span></li>
+        <li><span class="n" style="background:#0891B2">⑤</span><span>กด <strong>Deploy</strong> — รอประมาณ 30-60 วินาที</span></li>
+      </ul>
+      <div class="screen-box" style="margin-bottom:14px">
+        <div class="screen-head"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span><span class="screen-lbl">Vercel Dashboard — ผลลัพธ์</span></div>
+        <div class="screen-body"><span style="color:#3FB950">✓ Build Completed</span>
+<span style="color:#3FB950">✓ Deployment Ready</span>
+
+<span style="color:#E6EDF3">🔗 Production URL:</span>
+<span style="color:#58A6FF">https://cpf-incident-tracker.vercel.app</span>
+
+<span style="color:#8B949E">ทุกครั้งที่ git push → Vercel auto-deploy ให้อัตโนมัติ</span></div>
+      </div>
+
+      <!-- SQLite limitation note -->
+      <div style="background:#FFF3EC;border:1px solid #FCA85E;border-radius:10px;padding:14px 16px;margin-bottom:0">
+        <div style="font-size:13px;font-weight:700;color:#D35400;margin-bottom:8px">⚠️ ข้อจำกัด SQLite บน Vercel — สำหรับ Production จริง</div>
+        <div style="font-size:12px;color:#92400E;line-height:1.8">
+          Vercel เป็น <strong>Serverless</strong> — ไฟล์ <code>incidents.db</code> จะถูก reset ทุกครั้งที่ deploy ใหม่ เหมาะสำหรับ demo เท่านั้น<br>
+          ถ้าต้องการใช้งานจริง ให้ต่อฐานข้อมูลภายนอก:
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;font-size:12px">
+          <div style="background:#fff;border:1px solid #FDE68A;border-radius:8px;padding:10px">
+            <div style="font-weight:700;color:#0D2137">Vercel Postgres</div>
+            <div style="color:#5A6B7E;margin-top:2px">ฟรี 60 ชั่วโมง/เดือน · เชื่อมใน Vercel Dashboard ได้เลย</div>
+          </div>
+          <div style="background:#fff;border:1px solid #FDE68A;border-radius:8px;padding:10px">
+            <div style="font-weight:700;color:#0D2137">Supabase</div>
+            <div style="color:#5A6B7E;margin-top:2px">PostgreSQL ฟรี 500MB · ใช้ REST API หรือ SDK</div>
+          </div>
+          <div style="background:#fff;border:1px solid #FDE68A;border-radius:8px;padding:10px">
+            <div style="font-weight:700;color:#0D2137">PlanetScale</div>
+            <div style="color:#5A6B7E;margin-top:2px">MySQL ฟรี · ใช้งานง่ายกับ Node.js</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:#92400E">
+          💡 ให้ Claude Code ช่วย migrate: <code style="background:#FEF3C7;padding:1px 5px;border-radius:3px">แก้ database.js ให้ใช้ Vercel Postgres แทน SQLite</code>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- โครงสร้างไฟล์สุดท้าย -->
+  <h2 class="section-title">📁 โครงสร้างไฟล์สุดท้าย</h2>
+
+  <div class="file-tree">
+<span class="ft-dir">cpf-incident-tracker/</span>
+├── <span class="ft-new">server.js</span>          <span class="ft-comment">← Express server + API routes</span>
+├── <span class="ft-new">database.js</span>        <span class="ft-comment">← SQLite connection + query functions</span>
+├── <span class="ft-new">incidents.db</span>       <span class="ft-comment">← SQLite database file (auto-created)</span>
+├── <span class="ft-new">package.json</span>       <span class="ft-comment">← dependencies + scripts</span>
+├── <span class="ft-new">CLAUDE.md</span>          <span class="ft-comment">← AI instructions สำหรับ project นี้</span>
+├── <span class="ft-new">README.md</span>          <span class="ft-comment">← วิธีติดตั้งและรัน</span>
+├── <span class="ft-new">.gitignore</span>         <span class="ft-comment">← ไม่รวม node_modules, .env</span>
+├── <span class="ft-new">.env</span>               <span class="ft-comment">← LINE_TOKEN (ถ้าใช้ feature alert)</span>
+└── <span class="ft-dir">public/</span>
+    ├── <span class="ft-new">index.html</span>     <span class="ft-comment">← หน้า Dashboard หลัก</span>
+    ├── <span class="ft-new">report.html</span>    <span class="ft-comment">← หน้ากรอก Incident ใหม่</span>
+    └── <span class="ft-new">app.js</span>         <span class="ft-comment">← JavaScript logic ทั้งหมด</span></div>
+
+  <!-- สรุป -->
+  <h2 class="section-title">🎉 สรุป — สิ่งที่ได้จาก Module นี้</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+    <div style="background:var(--gcl);border:1px solid #86EFAC;border-radius:12px;padding:16px">
+      <div style="font-weight:700;color:var(--green);margin-bottom:8px">✅ ทักษะที่ได้</div>
+      <ul style="font-size:13px;color:#166534;line-height:2;padding-left:16px">
+        <li>วางแผน Architecture กับ Claude</li>
+        <li>เขียน Backend API ด้วย prompt</li>
+        <li>ออกแบบ Database ด้วยภาษาพูด</li>
+        <li>สร้าง Frontend UI ไม่ต้องเขียนโค้ดเอง</li>
+        <li>Debug ด้วยการอธิบายให้ Claude ฟัง</li>
+        <li>Deploy web app บน Vercel ได้ URL จริง</li>
+      </ul>
+    </div>
+    <div style="background:var(--ccl);border:1px solid #A5D8F0;border-radius:12px;padding:16px">
+      <div style="font-weight:700;color:var(--cyan);margin-bottom:8px">💡 Key Learnings</div>
+      <ul style="font-size:13px;color:#0E7490;line-height:2;padding-left:16px">
+        <li>Plan Mode ช่วยป้องกันความผิดพลาด</li>
+        <li>CLAUDE.md คือหัวใจของ project</li>
+        <li>บอก Context ชัด → ผลลัพธ์ดีกว่า</li>
+        <li>ทดสอบทีละ Phase ไม่รอทีเดียว</li>
+        <li>Bug report ที่ดี = แก้ได้เร็ว</li>
+        <li>Claude Code = Dev ใน pocket ตลอด 24 ชม.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">🚀 <span><strong>ต่อยอดโปรเจกต์นี้</strong> — เพิ่ม Login ด้วย JWT, ส่ง email อัตโนมัติ, เชื่อม MCP กับ Google Sheets, หรือใช้ Claude Code สร้าง Admin Panel เพิ่มเติม — ทั้งหมดทำได้ด้วย prompt เดียวกัน</span></div>
+
+  <div class="nav-footer">
+    <a href="module-claudecode.html" class="nav-btn">← Module 05D: Claude Code Basics</a>
+    <a href="module6.html" class="nav-btn primary">Module 06: MCP Protocol →</a>
+  </div>
+</main>
+
+<script>
+function copyPrompt(id,btn){
+  var t=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(function(){
+    var o=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';
+    btn.style.background='#1B7A3E';btn.style.color='#fff';
+    setTimeout(function(){btn.textContent=o;btn.style.background='';btn.style.color='';},2000);
+  }).catch(function(){btn.textContent='(เลือกด้วยมือ)';});
+}
+var path=window.location.pathname.split('/').pop();
+document.querySelectorAll('.sidebar a').forEach(function(a){
+  if(a.getAttribute('href')===path)a.classList.add('active');
+});
+</script>
+</body>
+</html>
